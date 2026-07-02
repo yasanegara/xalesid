@@ -1,21 +1,47 @@
-import { cookies } from "next/headers";
 import { redirect } from "next/navigation";
-import { verifySession } from "@/lib/auth";
+import { getCurrentTenant } from "@/lib/current-tenant";
 import { prisma } from "@/lib/prisma";
 
 export default async function DashboardPage() {
-  const token = cookies().get("session")?.value;
-  const session = token ? await verifySession(token) : null;
-  if (!session) redirect("/login");
-
-  const tenant = await prisma.tenant.findUnique({ where: { id: session.tenantId } });
+  const tenant = await getCurrentTenant();
   if (!tenant) redirect("/login");
 
+  const products = await prisma.product.findMany({
+    where: { tenantId: tenant.id },
+    orderBy: { createdAt: "desc" },
+  });
+
   return (
-    <main style={{ padding: 40, fontFamily: "sans-serif" }}>
-      <h1>Halo, {tenant.name}</h1>
-      <p>Toko kamu: xales.id/{tenant.slug}</p>
-      <p>Belum ada produk. Fitur "Bikin produk" nyusul di langkah berikutnya.</p>
-    </main>
+    <div className="page-wrap">
+      <div className="page-header">
+        <div>
+          <h1>Halo, {tenant.name}</h1>
+          <p className="muted">Toko kamu: xales.id/{tenant.slug}</p>
+        </div>
+        <a className="btn-primary" href="/dashboard/products/new">
+          + Produk baru
+        </a>
+      </div>
+
+      {products.length === 0 ? (
+        <div className="empty-state">
+          <p>Belum ada produk. Yuk bikin yang pertama.</p>
+        </div>
+      ) : (
+        <div className="product-list">
+          {products.map((p) => (
+            <div className="product-item" key={p.id}>
+              <div>
+                <b>{p.name}</b>
+                <div className="muted">Rp {p.price.toLocaleString("id-ID")}</div>
+              </div>
+              <span className={`product-badge ${p.isPhysical ? "physical" : ""}`}>
+                {p.isPhysical ? "Fisik" : "Digital"}
+              </span>
+            </div>
+          ))}
+        </div>
+      )}
+    </div>
   );
 }
