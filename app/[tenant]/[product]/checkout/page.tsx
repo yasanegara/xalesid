@@ -1,9 +1,10 @@
 "use client";
 
 import { useEffect, useState } from "react";
+import { trackEvent } from "@/lib/track-client";
 
 type Context = {
-  product: { name: string; price: number; isPhysical: boolean };
+  product: { id: string; name: string; price: number; isPhysical: boolean };
   paymentReady: boolean;
   midtransClientKey: string;
   midtransIsProd: boolean;
@@ -28,6 +29,7 @@ export default function CheckoutPage({ params }: { params: { tenant: string; pro
       .then((data) => {
         setCtx(data);
         setLoadingCtx(false);
+        trackEvent("checkout_start", data.product.id);
 
         if (data.paymentReady && data.midtransClientKey) {
           const script = document.createElement("script");
@@ -87,6 +89,9 @@ export default function CheckoutPage({ params }: { params: { tenant: string; pro
       body: JSON.stringify({ orderCode }),
     });
     const data = await res.json();
+    if (data.paid && ctx) {
+      trackEvent("payment_success", ctx.product.id);
+    }
     setDone(data);
   }
 

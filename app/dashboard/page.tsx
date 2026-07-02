@@ -49,6 +49,20 @@ export default async function DashboardPage() {
                   {p.isPhysical ? "Fisik" : "Digital"}
                 </span>
                 <a
+                  href={`/dashboard/products/${p.id}/funnel`}
+                  style={{
+                    fontSize: 12,
+                    fontWeight: 700,
+                    color: "#111",
+                    border: "1.5px solid #111",
+                    borderRadius: 6,
+                    padding: "5px 10px",
+                    textDecoration: "none",
+                  }}
+                >
+                  📊 Funnel
+                </a>
+                <a
                   href={`/dashboard/products/${p.id}/edit`}
                   style={{
                     fontSize: 12,

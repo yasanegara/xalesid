@@ -20,6 +20,7 @@ export async function GET(req: NextRequest) {
 
   return NextResponse.json({
     product: {
+      id: product.id,
       name: product.name,
       price: product.price,
       isPhysical: product.isPhysical,

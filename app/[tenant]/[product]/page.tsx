@@ -1,5 +1,7 @@
 import { notFound } from "next/navigation";
 import { prisma } from "@/lib/prisma";
+import PageViewTracker from "./PageViewTracker";
+import BuyButton from "./BuyButton";
 
 // URL-nya jadi: xales.id/nama-toko/nama-produk
 export default async function ProductLandingPage({
@@ -17,6 +19,7 @@ export default async function ProductLandingPage({
 
   return (
     <>
+      <PageViewTracker productId={product.id} />
       <div className="lp-bar">
         {product.isPhysical ? "📦 Produk fisik · Dikirim setelah pembayaran" : "⚡ Produk digital · Langsung dikirim setelah bayar"}
       </div>
@@ -32,9 +35,7 @@ export default async function ProductLandingPage({
             <div className="lp-price-note">
               {product.isPhysical ? "Belum termasuk ongkir" : "Sekali bayar, akses seumur hidup"}
             </div>
-            <a className="lp-btn" href={`/${tenant.slug}/${product.slug}/checkout`}>
-              Beli sekarang →
-            </a>
+            <BuyButton productId={product.id} href={`/${tenant.slug}/${product.slug}/checkout`} />
             <div className="lp-badge-row">
               <span>🔒 Pembayaran aman</span>
               <span>·</span>
