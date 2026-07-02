@@ -13,6 +13,8 @@ export default async function CRMPage() {
     orderBy: { createdAt: "desc" },
   });
 
+  const ordersForBoard = orders.map((o) => ({ ...o, createdAt: o.createdAt.toISOString() }));
+
   return (
     <div className="page-wrap" style={{ maxWidth: 1100 }}>
       <div className="page-header">
@@ -21,7 +23,7 @@ export default async function CRMPage() {
       <p style={{ fontSize: 13, color: "#666", marginBottom: 20 }}>
         Geser kartu ke kolom lain buat ubah status pesanan secara manual.
       </p>
-      <KanbanBoard initialOrders={orders} />
+      <KanbanBoard initialOrders={ordersForBoard} />
     </div>
   );
 }
