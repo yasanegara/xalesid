@@ -27,8 +27,11 @@ export default async function DashboardPage() {
         <a href="/dashboard/settings/ai" style={{ fontSize: 13, color: "#666", marginRight: 16 }}>
           ⚙️ Pengaturan AI
         </a>
-        <a href="/dashboard/settings/payment" style={{ fontSize: 13, color: "#666" }}>
+        <a href="/dashboard/settings/payment" style={{ fontSize: 13, color: "#666", marginRight: 16 }}>
           💳 Pengaturan Pembayaran
+        </a>
+        <a href="/dashboard/settings/telegram" style={{ fontSize: 13, color: "#666" }}>
+          🔔 Notifikasi Telegram
         </a>
       </p>
 
