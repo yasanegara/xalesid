@@ -41,9 +41,25 @@ export default async function DashboardPage() {
                 <b>{p.name}</b>
                 <div className="muted">Rp {p.price.toLocaleString("id-ID")}</div>
               </div>
-              <span className={`product-badge ${p.isPhysical ? "physical" : ""}`}>
-                {p.isPhysical ? "Fisik" : "Digital"}
-              </span>
+              <div style={{ display: "flex", alignItems: "center", gap: 10 }}>
+                <span className={`product-badge ${p.isPhysical ? "physical" : ""}`}>
+                  {p.isPhysical ? "Fisik" : "Digital"}
+                </span>
+                <a
+                  href={`/dashboard/products/${p.id}/edit`}
+                  style={{
+                    fontSize: 12,
+                    fontWeight: 700,
+                    color: "#111",
+                    border: "1.5px solid #111",
+                    borderRadius: 6,
+                    padding: "5px 10px",
+                    textDecoration: "none",
+                  }}
+                >
+                  🎨 Landing page
+                </a>
+              </div>
             </div>
           ))}
         </div>
