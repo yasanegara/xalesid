@@ -584,12 +584,11 @@ body {
 
 .hp-hero-photo img {
   width: 100%;
-  max-width: 400px;
+  max-width: 440px;
   aspect-ratio: 4 / 5;
   object-fit: cover;
-  border-radius: 16px;
-  border: 5px solid var(--k);
-  box-shadow: 10px 10px 0 var(--yd);
+  -webkit-mask-image: radial-gradient(ellipse 68% 72% at center, black 55%, transparent 100%);
+  mask-image: radial-gradient(ellipse 68% 72% at center, black 55%, transparent 100%);
 }
 
 .hp-tag {
