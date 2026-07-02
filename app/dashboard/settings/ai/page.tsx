@@ -72,26 +72,19 @@ export default function AISettingsPage() {
 
         {aiProvider !== "none" && (
           <div className="auth-field">
-            <label>
-              Kunci API {aiProvider === "anthropic" ? "Anthropic" : "OpenAI"} kamu
-              {aiProvider === "anthropic" && " (opsional)"}
-            </label>
+            <label>Kunci API {aiProvider === "anthropic" ? "Anthropic" : "OpenAI"} kamu</label>
             <input
               type="password"
               value={aiApiKey}
               onChange={(e) => setAiApiKey(e.target.value)}
               placeholder={hasOwnKey ? "Sudah tersimpan — isi ulang kalau mau ganti" : "sk-..."}
+              required={!hasOwnKey}
             />
-            {aiProvider === "anthropic" ? (
-              <p style={{ fontSize: 12, color: "#666", marginTop: 6 }}>
-                Kalau dikosongin, dipakai kunci bawaan platform (gratis, tapi bisa kena batas pemakaian bersama).
-                Isi kunci sendiri dari console.anthropic.com kalau mau pakai jatahmu sendiri.
-              </p>
-            ) : (
-              <p style={{ fontSize: 12, color: "#666", marginTop: 6 }}>
-                Wajib diisi — ambil dari platform.openai.com/api-keys. Platform gak nyediain kunci OpenAI gratis.
-              </p>
-            )}
+            <p style={{ fontSize: 12, color: "#666", marginTop: 6 }}>
+              {aiProvider === "anthropic"
+                ? "Wajib diisi — ambil dari console.anthropic.com > API Keys."
+                : "Wajib diisi — ambil dari platform.openai.com/api-keys."}
+            </p>
           </div>
         )}
 

@@ -15,10 +15,8 @@ export async function POST(req: NextRequest) {
     return NextResponse.json({ error: "Nama produk wajib diisi dulu." }, { status: 400 });
   }
 
-  // Prioritas: kunci API milik tenant sendiri. Kalau kosong dan providernya Anthropic,
-  // boleh pakai kunci punya platform (punya kamu) sebagai fallback.
-  const apiKey =
-    tenant.aiApiKey || (tenant.aiProvider === "anthropic" ? process.env.ANTHROPIC_API_KEY : undefined);
+  // User sekarang wajib pakai kunci API sendiri, apapun providernya
+  const apiKey = tenant.aiApiKey;
 
   if (!apiKey) {
     return NextResponse.json(
@@ -38,6 +36,7 @@ Jangan pakai tanda kutip di jawabanmu. Langsung tulis deskripsinya saja, tanpa b
     const description = await generateWithAI(tenant.aiProvider, apiKey, prompt);
     return NextResponse.json({ description });
   } catch (e) {
-    return NextResponse.json({ error: "Gagal minta bantuan AI. Cek lagi kunci API-nya di Pengaturan AI." }, { status: 502 });
+    const detail = e instanceof Error ? e.message : String(e);
+    return NextResponse.json({ error: "Gagal minta bantuan AI. Detail: " + detail }, { status: 502 });
   }
 }

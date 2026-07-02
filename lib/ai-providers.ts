@@ -4,7 +4,6 @@ export async function generateWithAI(provider: string, apiKey: string, prompt: s
   if (provider === "openai") {
     return generateWithOpenAI(apiKey, prompt);
   }
-  // default: anthropic
   return generateWithAnthropic(apiKey, prompt);
 }
 
@@ -22,7 +21,11 @@ async function generateWithAnthropic(apiKey: string, prompt: string): Promise<st
       messages: [{ role: "user", content: prompt }],
     }),
   });
-  if (!res.ok) throw new Error(await res.text());
+  if (!res.ok) {
+    const body = await res.text();
+    // Sertakan status code + pesan asli dari Anthropic, biar gampang didiagnosis
+    throw new Error(`Anthropic API error (${res.status}): ${body.slice(0, 300)}`);
+  }
   const data = await res.json();
   return data.content?.[0]?.text?.trim() || "";
 }
@@ -40,7 +43,10 @@ async function generateWithOpenAI(apiKey: string, prompt: string): Promise<strin
       messages: [{ role: "user", content: prompt }],
     }),
   });
-  if (!res.ok) throw new Error(await res.text());
+  if (!res.ok) {
+    const body = await res.text();
+    throw new Error(`OpenAI API error (${res.status}): ${body.slice(0, 300)}`);
+  }
   const data = await res.json();
   return data.choices?.[0]?.message?.content?.trim() || "";
 }
