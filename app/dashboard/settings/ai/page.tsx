@@ -6,6 +6,8 @@ export default function AISettingsPage() {
   const [aiProvider, setAiProvider] = useState("anthropic");
   const [aiApiKey, setAiApiKey] = useState("");
   const [hasOwnKey, setHasOwnKey] = useState(false);
+  const [aiTokensUsed, setAiTokensUsed] = useState(0);
+  const [aiTokenLimit, setAiTokenLimit] = useState(25000);
   const [loading, setLoading] = useState(true);
   const [saving, setSaving] = useState(false);
   const [message, setMessage] = useState("");
@@ -17,6 +19,8 @@ export default function AISettingsPage() {
       .then((data) => {
         setAiProvider(data.aiProvider || "anthropic");
         setHasOwnKey(!!data.hasOwnKey);
+        setAiTokensUsed(data.aiTokensUsed || 0);
+        setAiTokenLimit(data.aiTokenLimit || 25000);
         setLoading(false);
       })
       .catch(() => setLoading(false));
@@ -50,11 +54,39 @@ export default function AISettingsPage() {
 
   if (loading) return <div className="page-wrap">Memuat...</div>;
 
+  const pct = Math.min(100, Math.round((aiTokensUsed / aiTokenLimit) * 100));
+
   return (
     <div className="page-wrap">
       <div className="page-header">
         <h1>Pengaturan AI</h1>
       </div>
+
+      {!hasOwnKey && aiProvider === "anthropic" && (
+        <div className="card-form" style={{ marginBottom: 20 }}>
+          <div style={{ display: "flex", justifyContent: "space-between", fontSize: 13, marginBottom: 8 }}>
+            <span style={{ fontWeight: 700 }}>Jatah gratis dari platform</span>
+            <span>
+              {aiTokensUsed.toLocaleString("id-ID")} / {aiTokenLimit.toLocaleString("id-ID")} token
+            </span>
+          </div>
+          <div style={{ background: "#f0ede3", borderRadius: 6, height: 10, overflow: "hidden" }}>
+            <div
+              style={{
+                width: `${pct}%`,
+                background: pct >= 90 ? "#c0202e" : "#f2c200",
+                height: "100%",
+                borderRadius: 6,
+              }}
+            />
+          </div>
+          {pct >= 90 && (
+            <p style={{ fontSize: 12, color: "#9c0006", marginTop: 8 }}>
+              Jatah gratis hampir habis. Isi kunci API sendiri di bawah biar gak keputus.
+            </p>
+          )}
+        </div>
+      )}
 
       <form onSubmit={handleSave} className="card-form">
         <div className="auth-field">
@@ -78,12 +110,11 @@ export default function AISettingsPage() {
               value={aiApiKey}
               onChange={(e) => setAiApiKey(e.target.value)}
               placeholder={hasOwnKey ? "Sudah tersimpan — isi ulang kalau mau ganti" : "sk-..."}
-              required={!hasOwnKey}
             />
             <p style={{ fontSize: 12, color: "#666", marginTop: 6 }}>
               {aiProvider === "anthropic"
-                ? "Wajib diisi — ambil dari console.anthropic.com > API Keys."
-                : "Wajib diisi — ambil dari platform.openai.com/api-keys."}
+                ? "Boleh dikosongin dulu buat pakai jatah gratis platform. Isi sendiri kalau jatah gratisnya habis."
+                : "Wajib diisi — OpenAI gak punya jatah gratis dari platform, ambil dari platform.openai.com/api-keys."}
             </p>
           </div>
         )}

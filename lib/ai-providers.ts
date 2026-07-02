@@ -1,13 +1,16 @@
 // Satu fungsi buat 2 penyedia AI beda, biar kode pemanggilnya gak perlu tau bedanya
+// Sekarang juga ngembaliin berapa token yang beneran kepakai, buat dicatat ke kuota
 
-export async function generateWithAI(provider: string, apiKey: string, prompt: string): Promise<string> {
+type AIResult = { text: string; totalTokens: number };
+
+export async function generateWithAI(provider: string, apiKey: string, prompt: string): Promise<AIResult> {
   if (provider === "openai") {
     return generateWithOpenAI(apiKey, prompt);
   }
   return generateWithAnthropic(apiKey, prompt);
 }
 
-async function generateWithAnthropic(apiKey: string, prompt: string): Promise<string> {
+async function generateWithAnthropic(apiKey: string, prompt: string): Promise<AIResult> {
   const res = await fetch("https://api.anthropic.com/v1/messages", {
     method: "POST",
     headers: {
@@ -23,14 +26,15 @@ async function generateWithAnthropic(apiKey: string, prompt: string): Promise<st
   });
   if (!res.ok) {
     const body = await res.text();
-    // Sertakan status code + pesan asli dari Anthropic, biar gampang didiagnosis
     throw new Error(`Anthropic API error (${res.status}): ${body.slice(0, 300)}`);
   }
   const data = await res.json();
-  return data.content?.[0]?.text?.trim() || "";
+  const text = data.content?.[0]?.text?.trim() || "";
+  const totalTokens = (data.usage?.input_tokens || 0) + (data.usage?.output_tokens || 0);
+  return { text, totalTokens };
 }
 
-async function generateWithOpenAI(apiKey: string, prompt: string): Promise<string> {
+async function generateWithOpenAI(apiKey: string, prompt: string): Promise<AIResult> {
   const res = await fetch("https://api.openai.com/v1/chat/completions", {
     method: "POST",
     headers: {
@@ -48,5 +52,7 @@ async function generateWithOpenAI(apiKey: string, prompt: string): Promise<strin
     throw new Error(`OpenAI API error (${res.status}): ${body.slice(0, 300)}`);
   }
   const data = await res.json();
-  return data.choices?.[0]?.message?.content?.trim() || "";
+  const text = data.choices?.[0]?.message?.content?.trim() || "";
+  const totalTokens = data.usage?.total_tokens || 0;
+  return { text, totalTokens };
 }
