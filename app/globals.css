@@ -390,3 +390,44 @@ body {
 .co-thanks-card {
   max-width: 420px;
 }
+
+/* ── Nav bar dashboard ── */
+.dash-nav {
+  background: var(--k);
+  padding: 0 20px;
+}
+
+.dash-nav-inner {
+  max-width: 720px;
+  margin: 0 auto;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 14px 0;
+  flex-wrap: wrap;
+  gap: 10px;
+}
+
+.dash-nav-brand {
+  color: var(--y);
+  font-weight: 900;
+  font-size: 15px;
+  text-decoration: none;
+}
+
+.dash-nav-links {
+  display: flex;
+  gap: 16px;
+  flex-wrap: wrap;
+}
+
+.dash-nav-links a {
+  color: rgba(255, 255, 255, 0.75);
+  font-size: 13px;
+  font-weight: 700;
+  text-decoration: none;
+}
+
+.dash-nav-links a:hover {
+  color: var(--y);
+}

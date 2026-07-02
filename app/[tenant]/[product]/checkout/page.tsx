@@ -1,7 +1,7 @@
 "use client";
 
 import { useEffect, useState } from "react";
-import { trackEvent } from "@/lib/track-client";
+import { trackEvent, getVisitorId } from "@/lib/track-client";
 
 type Context = {
   product: { id: string; name: string; price: number; isPhysical: boolean };
@@ -45,6 +45,23 @@ export default function CheckoutPage({ params }: { params: { tenant: string; pro
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
 
+  function saveLeadIfReady(nextName: string, nextPhone: string) {
+    if (nextName.trim().length < 2 || nextPhone.trim().length < 9) return;
+    fetch("/api/checkout/save-lead", {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({
+        tenantSlug: params.tenant,
+        productSlug: params.product,
+        visitorId: getVisitorId(),
+        buyerName: nextName,
+        buyerEmail,
+        buyerPhone: nextPhone,
+        shippingAddress,
+      }),
+    }).catch(() => {});
+  }
+
   async function handleSubmit(e: React.FormEvent) {
     e.preventDefault();
     setError("");
@@ -60,6 +77,7 @@ export default function CheckoutPage({ params }: { params: { tenant: string; pro
           buyerEmail,
           buyerPhone,
           shippingAddress,
+          visitorId: getVisitorId(),
         }),
       });
       const data = await res.json();
@@ -135,7 +153,12 @@ export default function CheckoutPage({ params }: { params: { tenant: string; pro
           <form onSubmit={handleSubmit}>
             <div className="auth-field">
               <label>Nama lengkap</label>
-              <input value={buyerName} onChange={(e) => setBuyerName(e.target.value)} required />
+              <input
+                value={buyerName}
+                onChange={(e) => setBuyerName(e.target.value)}
+                onBlur={() => saveLeadIfReady(buyerName, buyerPhone)}
+                required
+              />
             </div>
             <div className="auth-field">
               <label>Email (link download dikirim ke sini)</label>
@@ -143,7 +166,16 @@ export default function CheckoutPage({ params }: { params: { tenant: string; pro
             </div>
             <div className="auth-field">
               <label>Nomor WhatsApp</label>
-              <input value={buyerPhone} onChange={(e) => setBuyerPhone(e.target.value)} required />
+              <input
+                type="tel"
+                inputMode="numeric"
+                value={buyerPhone}
+                onChange={(e) => setBuyerPhone(e.target.value.replace(/[^0-9+]/g, ""))}
+                onBlur={() => saveLeadIfReady(buyerName, buyerPhone)}
+                placeholder="08xxxxxxxxxx"
+                required
+                minLength={9}
+              />
             </div>
             {ctx.product.isPhysical && (
               <div className="auth-field">

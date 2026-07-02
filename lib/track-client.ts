@@ -1,6 +1,6 @@
 "use client";
 
-function getVisitorId(): string {
+export function getVisitorId(): string {
   const key = "xales_visitor_id";
   let id = localStorage.getItem(key);
   if (!id) {

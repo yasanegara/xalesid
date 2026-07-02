@@ -72,11 +72,14 @@ model Order {
   buyerPhone       String
   shippingAddress  String?  // wajib diisi kalau product.isPhysical = true
 
-  paymentStatus    String   @default("pending") // pending | paid | failed | refund
+  paymentStatus    String   @default("pending") // pending | belum_bayar | paid | failed | refund
   shippingStatus   String?  // belum_dikirim | dikirim | selesai (khusus fisik)
   paymentType      String?  // qris, bank_transfer, dll dari Midtrans
+  visitorId        String?  // buat nyambungin ke leads yang belum sempat checkout
 
   createdAt        DateTime @default(now())
+
+  @@index([visitorId, productId])
 }
 
 // ── Event = 1 catatan funnel (page_view, cta_click, checkout_start, payment_success) ──

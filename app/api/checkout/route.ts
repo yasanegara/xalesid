@@ -7,10 +7,13 @@ function generateOrderCode() {
 
 export async function POST(req: NextRequest) {
   const body = await req.json();
-  const { tenantSlug, productSlug, buyerName, buyerEmail, buyerPhone, shippingAddress } = body;
+  const { tenantSlug, productSlug, buyerName, buyerEmail, buyerPhone, shippingAddress, visitorId } = body;
 
   if (!tenantSlug || !productSlug || !buyerName || !buyerEmail || !buyerPhone) {
     return NextResponse.json({ error: "Data belum lengkap." }, { status: 400 });
+  }
+  if (!/^\+?[0-9]{9,15}$/.test(buyerPhone)) {
+    return NextResponse.json({ error: "Nomor WhatsApp gak valid, cuma boleh angka." }, { status: 400 });
   }
 
   const tenant = await prisma.tenant.findUnique({ where: { slug: tenantSlug } });
@@ -52,17 +55,37 @@ export async function POST(req: NextRequest) {
     return NextResponse.json({ error: "Gagal menyiapkan pembayaran. Cek lagi kunci Midtrans di Pengaturan Pembayaran." }, { status: 502 });
   }
 
-  await prisma.order.create({
-    data: {
-      orderCode,
-      productId: product.id,
-      buyerName,
-      buyerEmail,
-      buyerPhone,
-      shippingAddress: product.isPhysical ? shippingAddress : null,
-      paymentStatus: "pending",
-    },
-  });
+  // Kalau pengunjung ini sebelumnya udah pernah ninggalin data (belum bayar), naikin jadi transaksi asli
+  const existingDraft = visitorId
+    ? await prisma.order.findFirst({ where: { visitorId, productId: product.id, paymentStatus: "belum_bayar" } })
+    : null;
+
+  if (existingDraft) {
+    await prisma.order.update({
+      where: { id: existingDraft.id },
+      data: {
+        orderCode,
+        buyerName,
+        buyerEmail,
+        buyerPhone,
+        shippingAddress: product.isPhysical ? shippingAddress : null,
+        paymentStatus: "pending",
+      },
+    });
+  } else {
+    await prisma.order.create({
+      data: {
+        orderCode,
+        productId: product.id,
+        buyerName,
+        buyerEmail,
+        buyerPhone,
+        shippingAddress: product.isPhysical ? shippingAddress : null,
+        paymentStatus: "pending",
+        visitorId: visitorId || null,
+      },
+    });
+  }
 
   return NextResponse.json({ token: midtransData.token, orderCode });
 }
