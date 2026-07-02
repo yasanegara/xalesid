@@ -24,8 +24,11 @@ export default async function DashboardPage() {
       </div>
 
       <p style={{ marginBottom: 24 }}>
-        <a href="/dashboard/settings/ai" style={{ fontSize: 13, color: "#666" }}>
+        <a href="/dashboard/settings/ai" style={{ fontSize: 13, color: "#666", marginRight: 16 }}>
           ⚙️ Pengaturan AI
+        </a>
+        <a href="/dashboard/settings/payment" style={{ fontSize: 13, color: "#666" }}>
+          💳 Pengaturan Pembayaran
         </a>
       </p>
 

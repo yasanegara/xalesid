@@ -341,3 +341,52 @@ body {
   text-align: center;
   padding: 20px;
 }
+
+/* ── Checkout ── */
+.co-wrap {
+  min-height: 100vh;
+  padding: 40px 20px;
+  display: flex;
+  align-items: flex-start;
+  justify-content: center;
+}
+
+.co-card {
+  background: var(--w);
+  border-radius: 12px;
+  border: 1px solid #e7e2d6;
+  padding: 32px;
+  width: 100%;
+  max-width: 440px;
+}
+
+.co-summary {
+  background: #f7f5f0;
+  border-radius: 8px;
+  padding: 14px 16px;
+  margin-bottom: 22px;
+}
+
+.co-summary .name {
+  font-weight: 800;
+  font-size: 15px;
+  margin-bottom: 2px;
+}
+
+.co-summary .price {
+  font-weight: 900;
+  font-size: 20px;
+}
+
+.co-thanks {
+  min-height: 100vh;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 20px;
+  text-align: center;
+}
+
+.co-thanks-card {
+  max-width: 420px;
+}
