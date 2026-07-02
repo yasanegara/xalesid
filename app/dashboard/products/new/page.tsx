@@ -12,6 +12,34 @@ export default function NewProductPage() {
   const [digitalFileUrl, setDigitalFileUrl] = useState("");
   const [error, setError] = useState("");
   const [loading, setLoading] = useState(false);
+  const [aiLoading, setAiLoading] = useState(false);
+  const [aiError, setAiError] = useState("");
+
+  async function handleGenerateAI() {
+    if (!name.trim()) {
+      setAiError("Isi nama produk dulu ya, biar AI tahu mau nulis apa.");
+      return;
+    }
+    setAiError("");
+    setAiLoading(true);
+    try {
+      const res = await fetch("/api/products/generate-copy", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ name, hint: description }),
+      });
+      const data = await res.json();
+      if (!res.ok) {
+        setAiError(data.error || "Gagal minta bantuan AI.");
+        return;
+      }
+      setDescription(data.description);
+    } catch {
+      setAiError("Gagal terhubung ke server. Coba lagi sebentar.");
+    } finally {
+      setAiLoading(false);
+    }
+  }
 
   async function handleSubmit(e: React.FormEvent) {
     e.preventDefault();
@@ -49,8 +77,28 @@ export default function NewProductPage() {
         </div>
 
         <div className="auth-field">
-          <label>Deskripsi singkat (opsional)</label>
-          <input value={description} onChange={(e) => setDescription(e.target.value)} placeholder="1-2 kalimat tentang produk ini" />
+          <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", marginBottom: 6 }}>
+            <label style={{ marginBottom: 0 }}>Deskripsi singkat (opsional)</label>
+            <button
+              type="button"
+              onClick={handleGenerateAI}
+              disabled={aiLoading}
+              style={{
+                fontSize: 12,
+                fontWeight: 700,
+                background: "#fff3d6",
+                color: "#9c6500",
+                border: "none",
+                borderRadius: 6,
+                padding: "4px 10px",
+                cursor: "pointer",
+              }}
+            >
+              {aiLoading ? "Nulis..." : "✨ Buatkan dengan AI"}
+            </button>
+          </div>
+          <input value={description} onChange={(e) => setDescription(e.target.value)} placeholder="1-2 kalimat tentang produk ini, atau kasih kata kunci lalu klik Buatkan dengan AI" />
+          {aiError && <p style={{ fontSize: 12, color: "#9c0006", marginTop: 6 }}>{aiError}</p>}
         </div>
 
         <div className="auth-field">
