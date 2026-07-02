@@ -1,18 +1,30 @@
 import { NextRequest, NextResponse } from "next/server";
 import { getCurrentTenant } from "@/lib/current-tenant";
+import { generateWithAI } from "@/lib/ai-providers";
 
 export async function POST(req: NextRequest) {
   const tenant = await getCurrentTenant();
   if (!tenant) return NextResponse.json({ error: "Belum login." }, { status: 401 });
+
+  if (tenant.aiProvider === "none") {
+    return NextResponse.json({ error: "Fitur AI dimatikan buat toko ini. Ubah di Pengaturan AI." }, { status: 400 });
+  }
 
   const { name, hint } = await req.json();
   if (!name) {
     return NextResponse.json({ error: "Nama produk wajib diisi dulu." }, { status: 400 });
   }
 
-  const apiKey = process.env.ANTHROPIC_API_KEY;
+  // Prioritas: kunci API milik tenant sendiri. Kalau kosong dan providernya Anthropic,
+  // boleh pakai kunci punya platform (punya kamu) sebagai fallback.
+  const apiKey =
+    tenant.aiApiKey || (tenant.aiProvider === "anthropic" ? process.env.ANTHROPIC_API_KEY : undefined);
+
   if (!apiKey) {
-    return NextResponse.json({ error: "Fitur AI belum aktif — ANTHROPIC_API_KEY belum diisi di server." }, { status: 500 });
+    return NextResponse.json(
+      { error: `Belum ada kunci API buat ${tenant.aiProvider}. Isi dulu di Pengaturan AI.` },
+      { status: 400 }
+    );
   }
 
   const prompt = `Kamu bantu penjual online bikin deskripsi produk singkat buat landing page jualan.
@@ -23,29 +35,9 @@ Tulis 1 deskripsi singkat (maksimal 2 kalimat, bahasa Indonesia santai tapi meya
 Jangan pakai tanda kutip di jawabanmu. Langsung tulis deskripsinya saja, tanpa basa-basi atau penjelasan tambahan.`;
 
   try {
-    const res = await fetch("https://api.anthropic.com/v1/messages", {
-      method: "POST",
-      headers: {
-        "content-type": "application/json",
-        "x-api-key": apiKey,
-        "anthropic-version": "2023-06-01",
-      },
-      body: JSON.stringify({
-        model: "claude-haiku-4-5-20251001",
-        max_tokens: 200,
-        messages: [{ role: "user", content: prompt }],
-      }),
-    });
-
-    if (!res.ok) {
-      const errText = await res.text();
-      return NextResponse.json({ error: "Gagal minta bantuan AI: " + errText }, { status: 502 });
-    }
-
-    const data = await res.json();
-    const description = data.content?.[0]?.text?.trim() || "";
+    const description = await generateWithAI(tenant.aiProvider, apiKey, prompt);
     return NextResponse.json({ description });
   } catch (e) {
-    return NextResponse.json({ error: "Gagal terhubung ke layanan AI." }, { status: 502 });
+    return NextResponse.json({ error: "Gagal minta bantuan AI. Cek lagi kunci API-nya di Pengaturan AI." }, { status: 502 });
   }
 }

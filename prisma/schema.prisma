@@ -29,6 +29,10 @@ model Tenant {
   // Kanal notifikasi
   telegramChatId     String?
 
+  // Pilihan AI buat fitur "Buatkan dengan AI" — biar user bebas milih
+  aiProvider         String   @default("anthropic") // anthropic | openai | none
+  aiApiKey           String?  // kunci API milik user sendiri (kosong = pakai punya platform, khusus anthropic)
+
   createdAt          DateTime @default(now())
   products           Product[]
 }

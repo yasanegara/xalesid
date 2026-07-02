@@ -23,6 +23,12 @@ export default async function DashboardPage() {
         </a>
       </div>
 
+      <p style={{ marginBottom: 24 }}>
+        <a href="/dashboard/settings/ai" style={{ fontSize: 13, color: "#666" }}>
+          ⚙️ Pengaturan AI
+        </a>
+      </p>
+
       {products.length === 0 ? (
         <div className="empty-state">
           <p>Belum ada produk. Yuk bikin yang pertama.</p>
