@@ -1,0 +1,91 @@
+// ═══════════════════════════════════════════════════════════════
+// SKEMA DATABASE — xales.id
+// Multi-tenant: 1 baris Tenant = 1 user/toko. Semua data lain
+// (Product, Order, Event) selalu terikat ke tenantId biar terisolasi.
+// ═══════════════════════════════════════════════════════════════
+
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "postgresql"
+  url      = env("DATABASE_URL")
+}
+
+// ── Tenant = 1 akun user/toko ──
+model Tenant {
+  id                 String   @id @default(cuid())
+  name               String
+  slug               String   @unique // dipakai di URL: xales.id/toko-nama
+  email              String   @unique
+  passwordHash       String
+
+  // Kredensial pembayaran milik tenant sendiri (WAJIB dienkripsi saat disimpan production)
+  midtransServerKey  String?
+  midtransClientKey  String?
+  midtransIsProd     Boolean  @default(false)
+
+  // Kanal notifikasi
+  telegramChatId     String?
+
+  createdAt          DateTime @default(now())
+  products           Product[]
+}
+
+// ── Product = 1 produk yang dijual (ebook, jasa, dll) ──
+model Product {
+  id            String   @id @default(cuid())
+  tenantId      String
+  tenant        Tenant   @relation(fields: [tenantId], references: [id])
+
+  name          String
+  slug          String   // dipakai di URL landing page: xales.id/toko-nama/nama-produk
+  description   String?
+  price         Int
+  isPhysical    Boolean  @default(false) // true = butuh alamat + kirim manual
+
+  // Untuk produk digital: link file (Drive/Supabase Storage) yang dikirim otomatis
+  digitalFileUrl String?
+
+  createdAt     DateTime @default(now())
+  orders        Order[]
+  events        Event[]
+
+  @@unique([tenantId, slug])
+}
+
+// ── Order = 1 transaksi pembelian ──
+model Order {
+  id               String   @id @default(cuid())
+  orderCode        String   @unique // dikirim ke Midtrans sebagai order_id
+
+  productId        String
+  product          Product  @relation(fields: [productId], references: [id])
+
+  buyerName        String
+  buyerEmail       String
+  buyerPhone       String
+  shippingAddress  String?  // wajib diisi kalau product.isPhysical = true
+
+  paymentStatus    String   @default("pending") // pending | paid | failed | refund
+  shippingStatus   String?  // belum_dikirim | dikirim | selesai (khusus fisik)
+  paymentType      String?  // qris, bank_transfer, dll dari Midtrans
+
+  createdAt        DateTime @default(now())
+}
+
+// ── Event = 1 catatan funnel (page_view, cta_click, checkout_start, payment_success) ──
+model Event {
+  id         String   @id @default(cuid())
+
+  productId  String
+  product    Product  @relation(fields: [productId], references: [id])
+
+  type       String   // page_view | cta_click | checkout_start | payment_success
+  visitorId  String   // id anonim per pengunjung, biar bisa dihitung funnel per sesi
+
+  createdAt  DateTime @default(now())
+
+  @@index([productId, type])
+}

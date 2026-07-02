@@ -1,0 +1,17 @@
+# dependencies
+node_modules/
+
+# build output
+.next/
+out/
+
+# env — JANGAN pernah push file ini, isinya rahasia
+.env
+.env.local
+
+# prisma
+prisma/migrations/dev.db
+
+# os/editor
+.DS_Store
+*.log
