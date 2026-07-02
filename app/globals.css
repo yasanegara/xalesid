@@ -431,3 +431,76 @@ body {
 .dash-nav-links a:hover {
   color: var(--y);
 }
+
+/* ── CRM Kanban ── */
+.kanban-wrap {
+  display: flex;
+  gap: 14px;
+  overflow-x: auto;
+  padding-bottom: 12px;
+}
+
+.kanban-col {
+  background: #f7f5f0;
+  border-radius: 10px;
+  padding: 12px;
+  min-width: 250px;
+  flex: 1 1 250px;
+  max-width: 280px;
+}
+
+.kanban-col.drag-over {
+  outline: 2px dashed var(--y);
+  outline-offset: -2px;
+}
+
+.kanban-col-title {
+  font-size: 12px;
+  font-weight: 800;
+  text-transform: uppercase;
+  letter-spacing: 0.4px;
+  margin-bottom: 10px;
+  display: flex;
+  justify-content: space-between;
+}
+
+.kanban-count {
+  background: var(--k);
+  color: var(--y);
+  border-radius: 10px;
+  padding: 1px 8px;
+  font-size: 11px;
+}
+
+.kanban-card {
+  background: var(--w);
+  border: 1px solid #e7e2d6;
+  border-radius: 8px;
+  padding: 12px;
+  margin-bottom: 10px;
+  cursor: grab;
+  font-size: 13px;
+}
+
+.kanban-card:active {
+  cursor: grabbing;
+}
+
+.kanban-card b {
+  display: block;
+  font-size: 13.5px;
+  margin-bottom: 2px;
+}
+
+.kanban-card .kc-meta {
+  color: var(--g);
+  font-size: 11.5px;
+  line-height: 1.5;
+}
+
+.kanban-empty {
+  font-size: 12px;
+  color: #999;
+  text-align: center;
+  padding: 14px 0;
+}
