@@ -5,29 +5,21 @@ export default function HomePage() {
 
       {/* HERO */}
       <section className="hp-hero">
-        <div className="hp-hero-inner">
-          <div className="hp-hero-text">
-            <span className="hp-tag">xales.id · Buat UMKM &amp; Kreator Digital</span>
-            <h1 className="hp-h1">
-              Jualan Online yang
-              <br />
-              Ngurus Dirinya Sendiri
-            </h1>
-            <p className="hp-deck">
-              Landing page, checkout, pembayaran, kirim produk, sampai follow-up pembeli — semua jalan otomatis.
-              Kamu tinggal fokus bikin produk yang bagus.
-            </p>
-            <a href="/register" className="hp-btn">
-              Mulai Gratis Sekarang →
-            </a>
-            <p className="hp-sub-cta">Daftar 2 menit. Toko langsung bisa dipakai.</p>
-          </div>
-          <div className="hp-hero-photo">
-            <img
-              src="https://images.unsplash.com/photo-1755434613831-1a8cb00bfb2c?fm=jpg&q=80&w=900&auto=format&fit=crop"
-              alt="Pelaku usaha yang jualan online pakai xales.id"
-            />
-          </div>
+        <div className="hp-hero-inner hp-hero-inner-solo">
+          <span className="hp-tag">xales.id · Buat UMKM &amp; Kreator Digital</span>
+          <h1 className="hp-h1">
+            Jualan Online yang
+            <br />
+            Ngurus Dirinya Sendiri
+          </h1>
+          <p className="hp-deck">
+            Landing page, checkout, pembayaran, kirim produk, sampai follow-up pembeli — semua jalan otomatis.
+            Kamu tinggal fokus bikin produk yang bagus.
+          </p>
+          <a href="/register" className="hp-btn">
+            Mulai Gratis Sekarang →
+          </a>
+          <p className="hp-sub-cta">Daftar 2 menit. Toko langsung bisa dipakai.</p>
         </div>
       </section>
 
