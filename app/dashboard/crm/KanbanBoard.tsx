@@ -103,6 +103,7 @@ export default function KanbanBoard({ initialOrders }: { initialOrders: OrderCar
                   style={{
                     display: "inline-block",
                     marginTop: 8,
+                    marginRight: 6,
                     fontSize: 11,
                     fontWeight: 700,
                     color: "#1e7a34",
@@ -113,6 +114,23 @@ export default function KanbanBoard({ initialOrders }: { initialOrders: OrderCar
                   }}
                 >
                   💬 Chat WA
+                </a>
+                <a
+                  href={`/dashboard/crm/chat/${encodeURIComponent(o.buyerPhone.replace(/[^0-9]/g, ""))}`}
+                  onClick={(e) => e.stopPropagation()}
+                  style={{
+                    display: "inline-block",
+                    marginTop: 8,
+                    fontSize: 11,
+                    fontWeight: 700,
+                    color: "#111",
+                    border: "1.5px solid #111",
+                    borderRadius: 6,
+                    padding: "4px 8px",
+                    textDecoration: "none",
+                  }}
+                >
+                  🗨️ Chat di sini
                 </a>
               </div>
             ))}

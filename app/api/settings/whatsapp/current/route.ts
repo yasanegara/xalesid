@@ -9,5 +9,6 @@ export async function GET() {
     waProvider: tenant.waProvider,
     hasApiKey: !!tenant.waApiKey,
     waNotifyNumber: tenant.waNotifyNumber || "",
+    tenantId: tenant.id,
   });
 }

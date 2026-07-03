@@ -40,6 +40,7 @@ model Tenant {
 
   createdAt          DateTime @default(now())
   products           Product[]
+  messages           Message[]
 }
 
 // ── Product = 1 produk yang dijual (ebook, jasa, dll) ──
@@ -104,7 +105,20 @@ model Order {
   @@index([visitorId, productId])
 }
 
-// ── Event = 1 catatan funnel (page_view, cta_click, checkout_start, payment_success) ──
+// ── Message = 1 pesan chat WA (masuk atau keluar) ──
+model Message {
+  id         String   @id @default(cuid())
+  tenantId   String
+  tenant     Tenant   @relation(fields: [tenantId], references: [id])
+
+  phone      String   // nomor WA lawan bicara (pembeli)
+  direction  String   // "in" (dari pembeli) | "out" (dari toko)
+  body       String
+
+  createdAt  DateTime @default(now())
+
+  @@index([tenantId, phone])
+}
 model Event {
   id         String   @id @default(cuid())
 

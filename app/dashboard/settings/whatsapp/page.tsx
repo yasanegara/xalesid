@@ -7,6 +7,7 @@ export default function WhatsAppSettingsPage() {
   const [waApiKey, setWaApiKey] = useState("");
   const [waNotifyNumber, setWaNotifyNumber] = useState("");
   const [hasApiKey, setHasApiKey] = useState(false);
+  const [tenantId, setTenantId] = useState("");
   const [loading, setLoading] = useState(true);
   const [saving, setSaving] = useState(false);
   const [message, setMessage] = useState("");
@@ -19,6 +20,7 @@ export default function WhatsAppSettingsPage() {
         setWaProvider(data.waProvider || "none");
         setHasApiKey(!!data.hasApiKey);
         setWaNotifyNumber(data.waNotifyNumber || "");
+        setTenantId(data.tenantId || "");
         setLoading(false);
       })
       .catch(() => setLoading(false));
@@ -100,6 +102,19 @@ export default function WhatsAppSettingsPage() {
                 placeholder="08123456789"
               />
             </div>
+            {tenantId && (
+              <div className="hp-guarantee">
+                <b>🔗 Buat bisa balas chat di CRM</b>
+                <p>
+                  Biar pesan masuk dari pembeli kelihatan di menu Chat CRM, buka dashboard Fonnte → device kamu →
+                  edit → isi <b>Webhook URL</b> dengan:
+                  <br />
+                  <code style={{ fontSize: 11, wordBreak: "break-all" }}>
+                    https://xales.id/api/webhook/fonnte/{tenantId}
+                  </code>
+                </p>
+              </div>
+            )}
           </>
         )}
 
