@@ -22,7 +22,24 @@ export async function PATCH(req: NextRequest, { params }: { params: { id: string
     return NextResponse.json({ error: "Produk gak ditemukan." }, { status: 404 });
   }
 
-  const { name, description, price, isPhysical, digitalFileUrl } = await req.json();
+  const {
+    name,
+    description,
+    price,
+    isPhysical,
+    digitalFileUrl,
+    benefitPoints,
+    photoUrl,
+    guaranteeText,
+    faqJson,
+    stockEnabled,
+    stockQty,
+    showSoldCount,
+    showViewingNow,
+    promoPrice,
+    promoEndsAt,
+    socialProofEnabled,
+  } = await req.json();
 
   if (!name || !price) {
     return NextResponse.json({ error: "Nama produk dan harga wajib diisi." }, { status: 400 });
@@ -34,6 +51,12 @@ export async function PATCH(req: NextRequest, { params }: { params: { id: string
   if (!isPhysical && !digitalFileUrl) {
     return NextResponse.json({ error: "Produk digital wajib punya link file." }, { status: 400 });
   }
+  if (stockEnabled && (stockQty === undefined || stockQty === null || Number(stockQty) < 0)) {
+    return NextResponse.json({ error: "Isi jumlah stok yang valid." }, { status: 400 });
+  }
+  if (promoPrice && Number(promoPrice) >= priceNum) {
+    return NextResponse.json({ error: "Harga promo harus lebih murah dari harga normal." }, { status: 400 });
+  }
 
   const product = await prisma.product.update({
     where: { id: params.id },
@@ -43,6 +66,17 @@ export async function PATCH(req: NextRequest, { params }: { params: { id: string
       price: priceNum,
       isPhysical: !!isPhysical,
       digitalFileUrl: isPhysical ? null : digitalFileUrl,
+      benefitPoints: benefitPoints || null,
+      photoUrl: photoUrl || null,
+      guaranteeText: guaranteeText || null,
+      faqJson: faqJson || null,
+      stockEnabled: !!stockEnabled,
+      stockQty: stockEnabled ? Number(stockQty) : null,
+      showSoldCount: !!showSoldCount,
+      showViewingNow: !!showViewingNow,
+      promoPrice: promoPrice ? Number(promoPrice) : null,
+      promoEndsAt: promoEndsAt ? new Date(promoEndsAt) : null,
+      socialProofEnabled: !!socialProofEnabled,
     },
   });
 

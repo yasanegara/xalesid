@@ -54,6 +54,23 @@ model Product {
   // Untuk produk digital: link file (Drive/Supabase Storage) yang dikirim otomatis
   digitalFileUrl String?
 
+  // ── Konten tambahan landing page (semua opsional) ──
+  benefitPoints String?  // poin manfaat, 1 baris = 1 poin
+  photoUrl      String?  // foto produk
+  guaranteeText String?  // teks garansi
+  faqJson       String?  // daftar tanya-jawab, disimpan JSON [{q,a}]
+
+  // ── Scarcity — semua berbasis data asli, bukan settingan bohongan ──
+  stockEnabled  Boolean  @default(false)
+  stockQty      Int?     // stok awal, sisa dihitung dari jumlah pesanan lunas
+  showSoldCount Boolean  @default(false) // tampilkan "sudah X terjual"
+  showViewingNow Boolean @default(false) // tampilkan "X orang lagi lihat"
+  promoPrice    Int?     // harga promo, dipakai kalau lebih kecil dari price & belum lewat batas waktu
+  promoEndsAt   DateTime?
+
+  // ── Social proof pop-up (nama pembeli asli, disingkat) ──
+  socialProofEnabled Boolean @default(false)
+
   createdAt     DateTime @default(now())
   orders        Order[]
   events        Event[]
