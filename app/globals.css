@@ -575,7 +575,9 @@ body {
 
 .hp-hero-inner-solo {
   max-width: 720px;
+  margin: 0 auto;
   text-align: center;
+  display: block;
 }
 
 .hp-hero-inner-solo .hp-deck {

@@ -5,7 +5,7 @@ export default function HomePage() {
 
       {/* HERO */}
       <section className="hp-hero">
-        <div className="hp-hero-inner hp-hero-inner-solo">
+        <div className="hp-hero-inner-solo">
           <span className="hp-tag">xales.id · Buat UMKM &amp; Kreator Digital</span>
           <h1 className="hp-h1">
             Jualan Online yang
