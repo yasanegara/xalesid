@@ -28,6 +28,9 @@ model Tenant {
 
   // Kanal notifikasi
   telegramChatId     String?
+  waProvider         String   @default("none") // fonnte | none
+  waApiKey           String?  // token Fonnte milik tenant sendiri
+  waNotifyNumber     String?  // nomor WA tenant yang mau dikabarin
 
   // Pilihan AI buat fitur "Buatkan dengan AI" — biar user bebas milih
   aiProvider         String   @default("anthropic") // anthropic | openai | none

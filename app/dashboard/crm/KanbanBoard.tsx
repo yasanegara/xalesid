@@ -95,6 +95,25 @@ export default function KanbanBoard({ initialOrders }: { initialOrders: OrderCar
                   <br />
                   {o.buyerPhone}
                 </div>
+                <a
+                  href={`https://wa.me/${o.buyerPhone.replace(/[^0-9]/g, "")}`}
+                  target="_blank"
+                  rel="noopener noreferrer"
+                  onClick={(e) => e.stopPropagation()}
+                  style={{
+                    display: "inline-block",
+                    marginTop: 8,
+                    fontSize: 11,
+                    fontWeight: 700,
+                    color: "#1e7a34",
+                    border: "1.5px solid #1e7a34",
+                    borderRadius: 6,
+                    padding: "4px 8px",
+                    textDecoration: "none",
+                  }}
+                >
+                  💬 Chat WA
+                </a>
               </div>
             ))}
           </div>

@@ -13,6 +13,7 @@ export default function DashboardLayout({ children }: { children: React.ReactNod
           <Link href="/dashboard/settings/ai">AI</Link>
           <Link href="/dashboard/settings/payment">Pembayaran</Link>
           <Link href="/dashboard/settings/telegram">Telegram</Link>
+          <Link href="/dashboard/settings/whatsapp">WhatsApp</Link>
           <a href="/api/auth/logout">Keluar</a>
         </nav>
       </aside>
