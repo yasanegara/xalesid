@@ -10,6 +10,8 @@ export default async function EditProductPage({ params }: { params: { id: string
   const product = await prisma.product.findUnique({ where: { id: params.id } });
   if (!product || product.tenantId !== tenant.id) notFound();
 
+  const productForForm = { ...product, promoEndsAt: product.promoEndsAt ? product.promoEndsAt.toISOString() : null };
+
   return (
     <div className="page-wrap">
       <div className="page-header">
@@ -24,7 +26,7 @@ export default async function EditProductPage({ params }: { params: { id: string
           👁️ Lihat halaman
         </a>
       </div>
-      <EditProductForm product={product} />
+      <EditProductForm product={productForForm} />
     </div>
   );
 }
