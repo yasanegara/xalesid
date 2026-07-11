@@ -67,6 +67,15 @@ model Product {
   aiHeadline    String?  // headline hero versi AI, boleh beda dari nama produk
   landingBlocksJson String? // struktur halaman bebas dari AI: urutan & jenis section dia yang nentuin
 
+  // ── Gaya visual (opsional, default balik ke gaya xales.id) ──
+  brandColor    String?  // warna utama, hex code
+  brandFont     String?  // nama font dari daftar pilihan
+  stylePreset   String   @default("bold") // bold | minimal | playful
+
+  // ── Referensi buat AI (opsional) ──
+  referenceUrl      String? // link website lain, AI intip buat ngerti vibe (bukan nyontek)
+  referenceImageUrl String? // link gambar poster, AI "lihat" buat ngerti gaya visual
+
   // ── Scarcity — semua berbasis data asli, bukan settingan bohongan ──
   stockEnabled  Boolean  @default(false)
   stockQty      Int?     // stok awal, sisa dihitung dari jumlah pesanan lunas

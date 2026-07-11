@@ -2,13 +2,19 @@ import { NextRequest, NextResponse } from "next/server";
 import { prisma } from "@/lib/prisma";
 import { getCurrentTenant } from "@/lib/current-tenant";
 import { generateWithAI } from "@/lib/ai-providers";
+import { fetchReferenceText } from "@/lib/fetch-reference-text";
 
 function extractJson(text: string) {
   const cleaned = text.replace(/```json/gi, "").replace(/```/g, "").trim();
   return JSON.parse(cleaned);
 }
 
-// Langsung balik cepet, kasih jobId — prosesnya jalan sendiri di belakang layar
+const STYLE_LABEL: Record<string, string> = {
+  bold: "Bold & Berani — kayak Alex Hormozi: to the point, kontras tegas, headline besar, blak-blakan",
+  minimal: "Minimalis & Elegan — kalem, gak heboh, kata-kata dipilih hemat, percaya diri tanpa teriak-teriak",
+  playful: "Playful & Santai — akrab, ngobrol kayak temen, boleh ada sedikit humor ringan",
+};
+
 export async function POST(req: NextRequest) {
   const tenant = await getCurrentTenant();
   if (!tenant) return NextResponse.json({ error: "Belum login." }, { status: 401 });
@@ -17,7 +23,7 @@ export async function POST(req: NextRequest) {
     return NextResponse.json({ error: "Fitur AI dimatikan buat toko ini. Ubah di Pengaturan AI." }, { status: 400 });
   }
 
-  const { name, hint } = await req.json();
+  const { name, hint, stylePreset, referenceUrl, referenceImageUrl } = await req.json();
   if (!name) {
     return NextResponse.json({ error: "Nama produk wajib diisi dulu." }, { status: 400 });
   }
@@ -48,7 +54,19 @@ export async function POST(req: NextRequest) {
 
   const job = await prisma.aiJob.create({ data: { tenantId: tenant.id, status: "pending" } });
 
-  runGeneration(job.id, tenant.id, tenant.aiProvider, apiKey, tenant.aiModel, usingOwnKey, name, hint).catch(() => {});
+  runGeneration(
+    job.id,
+    tenant.id,
+    tenant.aiProvider,
+    apiKey,
+    tenant.aiModel,
+    usingOwnKey,
+    name,
+    hint,
+    stylePreset || "bold",
+    referenceUrl || "",
+    referenceImageUrl || ""
+  ).catch(() => {});
 
   return NextResponse.json({ jobId: job.id });
 }
@@ -61,17 +79,27 @@ async function runGeneration(
   aiModel: string | null,
   usingOwnKey: boolean,
   name: string,
-  hint: string
+  hint: string,
+  stylePreset: string,
+  referenceUrl: string,
+  referenceImageUrl: string
 ) {
-  const prompt = `Kamu adalah copywriter sales page kelas atas, gayanya kayak Alex Hormozi: to the point, blak-blakan soal masalah, tawaran yang jelas nilainya, gak bertele-tele, tapi tetap kedengaran profesional (bukan norak/lebay).
+  let referenceText = "";
+  if (referenceUrl) {
+    referenceText = await fetchReferenceText(referenceUrl);
+  }
+
+  const prompt = `Kamu adalah copywriter sales page kelas atas. Gaya nulis yang harus kamu pakai: ${STYLE_LABEL[stylePreset] || STYLE_LABEL.bold}.
 
 Produk yang mau dijual: "${name}"
 ${hint ? `Info tambahan dari penjual: "${hint}"` : ""}
+${referenceText ? `\nReferensi gaya bahasa dari website lain (JANGAN disalin kata-katanya persis, cuma buat kamu ngerti "vibe"-nya): "${referenceText}"` : ""}
+${referenceImageUrl ? `\nDi pesan ini juga ada gambar poster referensi — perhatiin mood, target audience, dan gaya visualnya, sesuaikan nada tulisanmu biar nyambung sama gambar itu.` : ""}
 
 Tugas kamu:
 1. Kenali dulu produk ini jualan ke siapa (segmen/persona) dan masalah apa yang dia selesaikan — jangan ditulis eksplisit, tapi pakai buat nentuin copy-nya.
 2. Rancang STRUKTUR halaman jualan ini SENDIRI — kamu yang mutusin section apa aja yang relevan buat produk ini, gak semua produk butuh section yang sama. Boleh 2 section, boleh 5, terserah kamu, yang penting pas buat produknya.
-3. Tulis semua copy-nya dalam Bahasa Indonesia.
+3. Tulis semua copy-nya dalam Bahasa Indonesia, dengan gaya yang udah ditentuin di atas.
 
 Pilihan jenis section yang boleh kamu pakai (pilih yang relevan aja, urutannya bebas kamu tentuin):
 - "pain": angkat masalah/kegelisahan calon pembeli sebelum punya produk ini. Field: title, points (array string, 3-4 poin, tiap poin 1 kalimat pendek yang nyentil).
@@ -91,10 +119,17 @@ Balas HANYA dalam format JSON persis kayak contoh ini, tanpa teks lain, tanpa ma
   ]
 }
 
-Aturan penting: JANGAN karang testimoni, angka penjualan, atau klaim yang gak masuk akal. Copy-nya harus jujur berdasarkan info produk yang dikasih.`;
+Aturan penting: JANGAN karang testimoni, angka penjualan, atau klaim yang gak masuk akal. Copy-nya harus jujur berdasarkan info produk yang dikasih. JANGAN nyalin kalimat dari referensi website kata per kata.`;
 
   try {
-    const { text, totalTokens } = await generateWithAI(aiProvider, apiKey, prompt, aiModel || undefined, 1800);
+    const { text, totalTokens } = await generateWithAI(
+      aiProvider,
+      apiKey,
+      prompt,
+      aiModel || undefined,
+      1800,
+      referenceImageUrl || undefined
+    );
     let parsed;
     try {
       parsed = extractJson(text);
@@ -108,8 +143,6 @@ Aturan penting: JANGAN karang testimoni, angka penjualan, atau klaim yang gak ma
       await prisma.tenant.update({ where: { id: tenantId }, data: { aiTokensUsed: { increment: totalTokens } } });
     }
 
-    // Sekalian susun versi "field sederhana" dari hasil section-section AI,
-    // biar tetap ada yang bisa diedit manual kalau usernya mau
     const sections = Array.isArray(parsed.sections) ? parsed.sections : [];
     const benefitsSection = sections.find((s: any) => s.type === "benefits");
     const guaranteeSection = sections.find((s: any) => s.type === "guarantee");
@@ -124,7 +157,6 @@ Aturan penting: JANGAN karang testimoni, angka penjualan, atau klaim yang gak ma
           description: parsed.description || "",
           closingHeadline: parsed.closingHeadline || "",
           sections,
-          // Fallback versi sederhana, dari section yang cocok kalau ada
           benefitPoints: benefitsSection?.points ? benefitsSection.points.join("\n") : "",
           guaranteeText: guaranteeSection?.text || "",
           faq: faqSection?.items || [],

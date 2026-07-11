@@ -1,19 +1,42 @@
 // Satu fungsi buat beberapa penyedia AI beda, biar kode pemanggilnya gak perlu tau bedanya
-// Sekarang juga ngembaliin berapa token yang beneran kepakai, buat dicatat ke kuota
+// Sekarang juga ngembaliin berapa token yang beneran kepakai, dan bisa terima gambar referensi
 
 type AIResult = { text: string; totalTokens: number };
 
-export async function generateWithAI(provider: string, apiKey: string, prompt: string, model?: string, maxTokens = 400): Promise<AIResult> {
+export async function generateWithAI(
+  provider: string,
+  apiKey: string,
+  prompt: string,
+  model?: string,
+  maxTokens = 400,
+  imageUrl?: string
+): Promise<AIResult> {
   if (provider === "openai") {
-    return generateWithOpenAICompatible(apiKey, prompt, "https://api.openai.com/v1/chat/completions", "gpt-4o-mini", maxTokens);
+    return generateWithOpenAICompatible(apiKey, prompt, "https://api.openai.com/v1/chat/completions", "gpt-4o-mini", maxTokens, imageUrl);
   }
   if (provider === "sumopod") {
-    return generateWithOpenAICompatible(apiKey, prompt, "https://ai.sumopod.com/v1/chat/completions", model || "claude-sonnet-4-6", maxTokens);
+    return generateWithOpenAICompatible(apiKey, prompt, "https://ai.sumopod.com/v1/chat/completions", model || "claude-sonnet-4-6", maxTokens, imageUrl);
   }
-  return generateWithAnthropic(apiKey, prompt, maxTokens);
+  return generateWithAnthropic(apiKey, prompt, maxTokens, imageUrl);
 }
 
-async function generateWithAnthropic(apiKey: string, prompt: string, maxTokens: number): Promise<AIResult> {
+async function generateWithAnthropic(apiKey: string, prompt: string, maxTokens: number, imageUrl?: string): Promise<AIResult> {
+  const content: any[] = [];
+
+  if (imageUrl) {
+    try {
+      // Anthropic butuh gambarnya di-encode base64, gak bisa langsung kasih link
+      const imgRes = await fetch(imageUrl);
+      const buffer = await imgRes.arrayBuffer();
+      const base64 = Buffer.from(buffer).toString("base64");
+      const mediaType = imgRes.headers.get("content-type") || "image/jpeg";
+      content.push({ type: "image", source: { type: "base64", media_type: mediaType, data: base64 } });
+    } catch {
+      // Kalau gambar gagal diambil, lanjut tanpa gambar aja, jangan gagalin semuanya
+    }
+  }
+  content.push({ type: "text", text: prompt });
+
   const res = await fetch("https://api.anthropic.com/v1/messages", {
     method: "POST",
     headers: {
@@ -24,7 +47,7 @@ async function generateWithAnthropic(apiKey: string, prompt: string, maxTokens: 
     body: JSON.stringify({
       model: "claude-haiku-4-5-20251001",
       max_tokens: maxTokens,
-      messages: [{ role: "user", content: prompt }],
+      messages: [{ role: "user", content }],
     }),
   });
   if (!res.ok) {
@@ -38,7 +61,19 @@ async function generateWithAnthropic(apiKey: string, prompt: string, maxTokens: 
 }
 
 // Dipakai bareng buat OpenAI DAN Sumopod, soalnya formatnya sama-sama "OpenAI-compatible"
-async function generateWithOpenAICompatible(apiKey: string, prompt: string, endpoint: string, model: string, maxTokens: number): Promise<AIResult> {
+async function generateWithOpenAICompatible(
+  apiKey: string,
+  prompt: string,
+  endpoint: string,
+  model: string,
+  maxTokens: number,
+  imageUrl?: string
+): Promise<AIResult> {
+  const content: any[] = [{ type: "text", text: prompt }];
+  if (imageUrl) {
+    content.push({ type: "image_url", image_url: { url: imageUrl } });
+  }
+
   const res = await fetch(endpoint, {
     method: "POST",
     headers: {
@@ -48,7 +83,7 @@ async function generateWithOpenAICompatible(apiKey: string, prompt: string, endp
     body: JSON.stringify({
       model,
       max_tokens: maxTokens,
-      messages: [{ role: "user", content: prompt }],
+      messages: [{ role: "user", content: imageUrl ? content : prompt }],
     }),
   });
   if (!res.ok) {

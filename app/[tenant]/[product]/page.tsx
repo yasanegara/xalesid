@@ -3,6 +3,7 @@ import { prisma } from "@/lib/prisma";
 import PageViewTracker from "./PageViewTracker";
 import BuyButton from "./BuyButton";
 import SocialProofPopup from "./SocialProofPopup";
+import { darkenHex, radiusForPreset, googleFontHref } from "@/lib/style-utils";
 
 type PainBlock = { type: "pain"; title?: string; points?: string[] };
 type BenefitsBlock = { type: "benefits"; title?: string; points?: string[] };
@@ -44,6 +45,16 @@ export default async function ProductLandingPage({
 
   const buyHref = `/${tenant.slug}/${product.slug}/checkout`;
 
+  // ── Gaya visual: kalau produk punya warna/font sendiri, override gaya default xales.id ──
+  const brandColor = product.brandColor || "#f2c200";
+  const styleVars = {
+    "--y": brandColor,
+    "--yd": darkenHex(brandColor),
+    "--radius": radiusForPreset(product.stylePreset),
+    fontFamily: product.brandFont ? `"${product.brandFont}", "Plus Jakarta Sans", sans-serif` : undefined,
+  } as React.CSSProperties;
+  const fontHref = googleFontHref(product.brandFont);
+
   // ── Kalau AI udah nyusun struktur bebas, pakai itu. Kalau belum, pakai field manual biasa ──
   const aiSections: Block[] | null = product.landingBlocksJson ? JSON.parse(product.landingBlocksJson) : null;
   const heroTitle = product.aiHeadline || product.name;
@@ -54,7 +65,8 @@ export default async function ProductLandingPage({
   const faqListManual: { q: string; a: string }[] = product.faqJson ? JSON.parse(product.faqJson) : [];
 
   return (
-    <>
+    <div style={styleVars}>
+      {fontHref && <link rel="stylesheet" href={fontHref} />}
       <PageViewTracker productId={product.id} />
       {product.socialProofEnabled && <SocialProofPopup productId={product.id} />}
 
@@ -282,6 +294,6 @@ export default async function ProductLandingPage({
           xales.id
         </a>
       </footer>
-    </>
+    </div>
   );
 }

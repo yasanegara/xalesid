@@ -18,6 +18,11 @@ type Product = {
   faqJson: string | null;
   aiHeadline: string | null;
   landingBlocksJson: string | null;
+  brandColor: string | null;
+  brandFont: string | null;
+  stylePreset: string;
+  referenceUrl: string | null;
+  referenceImageUrl: string | null;
   stockEnabled: boolean;
   stockQty: number | null;
   showSoldCount: boolean;
@@ -53,6 +58,13 @@ export default function EditProductForm({ product }: { product: Product }) {
   const [landingBlocksJson, setLandingBlocksJson] = useState(product.landingBlocksJson || "");
   const aiSections = landingBlocksJson ? JSON.parse(landingBlocksJson) : null;
 
+  // Gaya visual & referensi
+  const [brandColor, setBrandColor] = useState(product.brandColor || "#f2c200");
+  const [brandFont, setBrandFont] = useState(product.brandFont || "Plus Jakarta Sans");
+  const [stylePreset, setStylePreset] = useState(product.stylePreset || "bold");
+  const [referenceUrl, setReferenceUrl] = useState(product.referenceUrl || "");
+  const [referenceImageUrl, setReferenceImageUrl] = useState(product.referenceImageUrl || "");
+
   // Scarcity
   const [stockEnabled, setStockEnabled] = useState(product.stockEnabled);
   const [stockQty, setStockQty] = useState(product.stockQty ? String(product.stockQty) : "");
@@ -82,7 +94,7 @@ export default function EditProductForm({ product }: { product: Product }) {
       const startRes = await fetch("/api/products/generate-landing-content", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ name, hint: description }),
+        body: JSON.stringify({ name, hint: description, stylePreset, referenceUrl, referenceImageUrl }),
       });
       const startData = await startRes.json();
       if (!startRes.ok) {
@@ -191,6 +203,11 @@ export default function EditProductForm({ product }: { product: Product }) {
           faqJson: faqItems.length ? JSON.stringify(faqItems.filter((f) => f.q.trim())) : "",
           aiHeadline,
           landingBlocksJson,
+          brandColor,
+          brandFont,
+          stylePreset,
+          referenceUrl,
+          referenceImageUrl,
           stockEnabled,
           stockQty,
           showSoldCount,
@@ -319,6 +336,82 @@ export default function EditProductForm({ product }: { product: Product }) {
           <input value={digitalFileUrl} onChange={(e) => setDigitalFileUrl(e.target.value)} placeholder="https://drive.google.com/..." required={!isPhysical} />
         </div>
       )}
+
+      {/* ── Gaya & Referensi ── */}
+      <details style={{ marginTop: 24, marginBottom: 8 }} open>
+        <summary style={{ cursor: "pointer", fontWeight: 800, fontSize: 14, padding: "8px 0" }}>
+          🎨 Gaya &amp; Referensi
+        </summary>
+        <div style={{ paddingTop: 12 }}>
+          <div className="auth-field">
+            <label>Warna utama</label>
+            <div style={{ display: "flex", gap: 10, alignItems: "center" }}>
+              <input
+                type="color"
+                value={brandColor}
+                onChange={(e) => setBrandColor(e.target.value)}
+                style={{ width: 44, height: 40, border: "2px solid #ddd", borderRadius: 8, padding: 2, cursor: "pointer" }}
+              />
+              <input value={brandColor} onChange={(e) => setBrandColor(e.target.value)} style={{ flex: 1 }} />
+            </div>
+          </div>
+
+          <div className="auth-field">
+            <label>Font</label>
+            <select
+              value={brandFont}
+              onChange={(e) => setBrandFont(e.target.value)}
+              style={{ width: "100%", border: "2px solid #ddd", borderRadius: 8, padding: 11, fontSize: 15 }}
+            >
+              <option value="Plus Jakarta Sans">Plus Jakarta Sans (default)</option>
+              <option value="Poppins">Poppins</option>
+              <option value="Inter">Inter</option>
+              <option value="Playfair Display">Playfair Display (elegan/serif)</option>
+              <option value="Nunito">Nunito (playful/bulat)</option>
+            </select>
+          </div>
+
+          <div className="auth-field">
+            <label>Gaya penulisan &amp; layout</label>
+            <select
+              value={stylePreset}
+              onChange={(e) => setStylePreset(e.target.value)}
+              style={{ width: "100%", border: "2px solid #ddd", borderRadius: 8, padding: 11, fontSize: 15 }}
+            >
+              <option value="bold">Bold &amp; Berani (ala Hormozi)</option>
+              <option value="minimal">Minimalis &amp; Elegan</option>
+              <option value="playful">Playful &amp; Santai</option>
+            </select>
+            <p style={{ fontSize: 12, color: "#666", marginTop: 6 }}>
+              Ini ngaruh ke sudut kartu/tombol dan gaya bahasa yang dipakai AI pas generate.
+            </p>
+          </div>
+
+          <div className="auth-field">
+            <label>Referensi website (opsional)</label>
+            <input
+              value={referenceUrl}
+              onChange={(e) => setReferenceUrl(e.target.value)}
+              placeholder="https://contoh-kompetitor.com"
+            />
+            <p style={{ fontSize: 12, color: "#666", marginTop: 6 }}>
+              AI bakal intip gaya bahasanya buat referensi, tapi gak nyontek persis.
+            </p>
+          </div>
+
+          <div className="auth-field">
+            <label>Referensi gambar poster (opsional)</label>
+            <input
+              value={referenceImageUrl}
+              onChange={(e) => setReferenceImageUrl(e.target.value)}
+              placeholder="https://... link gambar"
+            />
+            <p style={{ fontSize: 12, color: "#666", marginTop: 6 }}>
+              AI bakal "lihat" gambar ini buat nyesuaiin gaya tulisannya. Isi link gambar, bukan upload file.
+            </p>
+          </div>
+        </div>
+      </details>
 
       {/* ── Konten tambahan ── */}
       <details style={{ marginTop: 24, marginBottom: 8 }}>
