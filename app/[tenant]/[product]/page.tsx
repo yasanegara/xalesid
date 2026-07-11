@@ -5,12 +5,20 @@ import BuyButton from "./BuyButton";
 import SocialProofPopup from "./SocialProofPopup";
 import { darkenHex, neuroBaseHex, radiusForPreset, googleFontHref } from "@/lib/style-utils";
 
-type PainBlock = { type: "pain"; title?: string; points?: string[] };
-type BenefitsBlock = { type: "benefits"; title?: string; points?: string[] };
+type PointItem = string | { text: string; icon?: string };
+type PainBlock = { type: "pain"; title?: string; points?: PointItem[] };
+type BenefitsBlock = { type: "benefits"; title?: string; points?: PointItem[] };
 type MechanismBlock = { type: "mechanism"; title?: string; steps?: { title: string; description: string }[] };
 type GuaranteeBlock = { type: "guarantee"; text?: string };
 type FaqBlock = { type: "faq"; items?: { q: string; a: string }[] };
 type Block = PainBlock | BenefitsBlock | MechanismBlock | GuaranteeBlock | FaqBlock;
+
+function pointText(p: PointItem) {
+  return typeof p === "string" ? p : p.text;
+}
+function pointIcon(p: PointItem, fallback: string) {
+  return typeof p === "string" ? fallback : p.icon || fallback;
+}
 
 // URL-nya jadi: xales.id/nama-toko/nama-produk
 export default async function ProductLandingPage({
@@ -77,7 +85,7 @@ export default async function ProductLandingPage({
 
       {/* ── HERO ── */}
       <section className="lp-hero">
-        <div className="lp-hero-inner">
+        <div className="lp-hero-inner pp-reveal">
           <span className="lp-tag">{tenant.name}</span>
           <h1 className="lp-title">{heroTitle}</h1>
           {product.description && <p className="lp-desc">{product.description}</p>}
@@ -129,14 +137,14 @@ export default async function ProductLandingPage({
             if (block.type === "pain" && block.points?.length) {
               return (
                 <section className="pp-section pp-pain-section" key={i}>
-                  <div className="pp-w">
+                  <div className="pp-w pp-reveal">
                     <span className="pp-section-label">Sebelum lanjut</span>
                     <h2 className="pp-section-title">{block.title}</h2>
                     <div style={{ display: "flex", flexDirection: "column", gap: 18 }}>
                       {block.points.map((p, j) => (
                         <div className="pp-pain-item" key={j}>
-                          <span className="pp-pain-x">✗</span>
-                          <span className="pp-pain-text">{p}</span>
+                          <span className="pp-pain-x">{pointIcon(p, "✗")}</span>
+                          <span className="pp-pain-text">{pointText(p)}</span>
                         </div>
                       ))}
                     </div>
@@ -147,14 +155,14 @@ export default async function ProductLandingPage({
             if (block.type === "benefits" && block.points?.length) {
               return (
                 <section className="pp-section pp-benefits-section" key={i}>
-                  <div className="pp-w">
+                  <div className="pp-w pp-reveal">
                     <span className="pp-section-label">Yang kamu dapat</span>
                     <h2 className="pp-section-title">{block.title}</h2>
                     <ul className="pp-benefit-list" style={{ listStyle: "none" }}>
                       {block.points.map((p, j) => (
                         <li className="pp-benefit-item" key={j}>
-                          <span className="pp-benefit-check">✓</span>
-                          <span>{p}</span>
+                          <span className="pp-benefit-check">{pointIcon(p, "✓")}</span>
+                          <span>{pointText(p)}</span>
                         </li>
                       ))}
                     </ul>
@@ -165,7 +173,7 @@ export default async function ProductLandingPage({
             if (block.type === "mechanism" && block.steps?.length) {
               return (
                 <section className="pp-section pp-mechanism-section" key={i}>
-                  <div className="pp-w">
+                  <div className="pp-w pp-reveal">
                     <span className="pp-section-label" style={{ color: "#b8860b" }}>
                       Cara kerjanya
                     </span>
@@ -188,7 +196,7 @@ export default async function ProductLandingPage({
             if (block.type === "guarantee" && block.text) {
               return (
                 <section className="pp-section pp-guarantee-section" key={i}>
-                  <div className="pp-w">
+                  <div className="pp-w pp-reveal">
                     <div className="pp-guarantee-card">
                       <div className="pp-guarantee-icon">🛡️</div>
                       <div className="pp-guarantee-text">{block.text}</div>
@@ -200,7 +208,7 @@ export default async function ProductLandingPage({
             if (block.type === "faq" && block.items?.length) {
               return (
                 <section className="pp-section pp-faq-section" key={i}>
-                  <div className="pp-w">
+                  <div className="pp-w pp-reveal">
                     <span className="pp-section-label" style={{ color: "#b8860b" }}>
                       Masih ragu?
                     </span>
@@ -221,7 +229,7 @@ export default async function ProductLandingPage({
           <>
             {benefitListManual.length > 0 && (
               <section className="pp-section pp-benefits-section">
-                <div className="pp-w">
+                <div className="pp-w pp-reveal">
                   <span className="pp-section-label">Yang kamu dapat</span>
                   <h2 className="pp-section-title">Kenapa produk ini layak dibeli</h2>
                   <ul className="pp-benefit-list" style={{ listStyle: "none" }}>
@@ -237,7 +245,7 @@ export default async function ProductLandingPage({
             )}
             {product.guaranteeText && (
               <section className="pp-section pp-guarantee-section">
-                <div className="pp-w">
+                <div className="pp-w pp-reveal">
                   <div className="pp-guarantee-card">
                     <div className="pp-guarantee-icon">🛡️</div>
                     <div className="pp-guarantee-text">{product.guaranteeText}</div>
@@ -247,7 +255,7 @@ export default async function ProductLandingPage({
             )}
             {faqListManual.length > 0 && (
               <section className="pp-section pp-faq-section">
-                <div className="pp-w">
+                <div className="pp-w pp-reveal">
                   <span className="pp-section-label" style={{ color: "#b8860b" }}>
                     Masih ragu?
                   </span>
@@ -265,7 +273,7 @@ export default async function ProductLandingPage({
         )}
 
       <section className="pp-section pp-final-section">
-        <div className="pp-w">
+        <div className="pp-w pp-reveal">
           <h2 className="pp-final-title">{soldOut ? "Stoknya habis dulu" : "Yuk, mulai sekarang"}</h2>
           {!soldOut && (
             <a href={buyHref} className="hp-btn">
@@ -281,6 +289,22 @@ export default async function ProductLandingPage({
           xales.id
         </a>
       </footer>
+
+      <script
+        dangerouslySetInnerHTML={{
+          __html: `
+(function(){
+  if (typeof IntersectionObserver === 'undefined') return;
+  var obs = new IntersectionObserver(function(entries){
+    entries.forEach(function(e){
+      if (e.isIntersecting) { e.target.classList.add('pp-reveal-on'); obs.unobserve(e.target); }
+    });
+  }, { threshold: 0.1 });
+  document.querySelectorAll('.pp-reveal').forEach(function(el){ obs.observe(el); });
+})();
+`,
+        }}
+      />
     </div>
   );
 }

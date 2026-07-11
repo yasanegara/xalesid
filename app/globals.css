@@ -885,6 +885,119 @@ body {
   box-shadow: 3px 3px 6px rgba(0, 0, 0, 0.15), -3px -3px 6px rgba(255, 255, 255, 0.8);
 }
 
+/* ══════════════════════════════════════════════════
+   POLISH TAMBAHAN — biar kerasa "dirancang", bukan cuma diisi teks
+   ══════════════════════════════════════════════════ */
+
+/* ── Elemen dekoratif — blob gradasi lembut di background section gelap ── */
+.lp-hero,
+.pp-pain-section,
+.pp-benefits-section,
+.pp-final-section {
+  position: relative;
+  overflow: hidden;
+}
+
+.lp-hero::before,
+.pp-pain-section::before,
+.pp-benefits-section::before,
+.pp-final-section::before {
+  content: "";
+  position: absolute;
+  width: 480px;
+  height: 480px;
+  background: radial-gradient(circle, var(--y) 0%, transparent 70%);
+  opacity: 0.18;
+  filter: blur(50px);
+  top: -180px;
+  right: -120px;
+  pointer-events: none;
+  z-index: 0;
+}
+
+.pp-pain-section::after,
+.pp-final-section::after {
+  content: "";
+  position: absolute;
+  width: 360px;
+  height: 360px;
+  background: radial-gradient(circle, var(--y) 0%, transparent 70%);
+  opacity: 0.1;
+  filter: blur(50px);
+  bottom: -150px;
+  left: -100px;
+  pointer-events: none;
+  z-index: 0;
+}
+
+.lp-hero-inner,
+.pp-w {
+  position: relative;
+  z-index: 1;
+}
+
+/* Neumorphism sengaja flat total, blob malah ganggu kesan "lembut"-nya */
+.pp-style-neuro .lp-hero::before,
+.pp-style-neuro .pp-pain-section::before,
+.pp-style-neuro .pp-benefits-section::before,
+.pp-style-neuro .pp-final-section::before,
+.pp-style-neuro .pp-pain-section::after,
+.pp-style-neuro .pp-final-section::after {
+  display: none;
+}
+
+/* ── Grid manfaat 2 kolom + kartu per poin, bukan cuma list polos ── */
+.pp-benefit-list {
+  display: grid;
+  grid-template-columns: 1fr;
+  gap: 16px;
+}
+
+@media (min-width: 640px) {
+  .pp-benefit-list {
+    grid-template-columns: 1fr 1fr;
+  }
+}
+
+.pp-benefit-item {
+  background: rgba(255, 255, 255, 0.06);
+  border-radius: var(--radius, 10px);
+  padding: 18px;
+  align-items: flex-start;
+}
+
+.pp-benefit-check {
+  font-size: 15px;
+}
+
+.pp-style-minimal .pp-benefit-item {
+  background: #fff;
+  box-shadow: 0 4px 16px rgba(0, 0, 0, 0.05);
+}
+
+.pp-style-glass .pp-benefit-item {
+  background: rgba(255, 255, 255, 0.14);
+  backdrop-filter: blur(10px);
+  border: 1px solid rgba(255, 255, 255, 0.25);
+}
+
+.pp-style-neuro .pp-benefit-item {
+  background: var(--neuro-base, #eceef2);
+  box-shadow: 6px 6px 12px rgba(0, 0, 0, 0.12), -6px -6px 12px rgba(255, 255, 255, 0.8);
+}
+
+/* ── Animasi muncul pelan pas di-scroll ── */
+.pp-reveal {
+  opacity: 0;
+  transform: translateY(26px);
+  transition: opacity 0.7s ease, transform 0.7s ease;
+}
+
+.pp-reveal-on {
+  opacity: 1;
+  transform: none;
+}
+
 /* ── Checkout ── */
 .co-wrap {
   min-height: 100vh;

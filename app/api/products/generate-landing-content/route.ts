@@ -111,8 +111,8 @@ Tugas kamu:
 3. Tulis semua copy-nya dalam Bahasa Indonesia, dengan gaya yang udah ditentuin di atas.
 
 Pilihan jenis section yang boleh kamu pakai (pilih yang relevan aja, urutannya bebas kamu tentuin):
-- "pain": angkat masalah/kegelisahan calon pembeli sebelum punya produk ini. Field: title, points (array string, 3-4 poin, tiap poin 1 kalimat pendek yang nyentil).
-- "benefits": manfaat konkret dari produk ini. Field: title, points (array string, 3-5 poin, tiap poin maksimal 10 kata).
+- "pain": angkat masalah/kegelisahan calon pembeli sebelum punya produk ini. Field: title, points (array of {text, icon}, 3-4 poin — text 1 kalimat pendek yang nyentil, icon 1 emoji yang pas buat poin itu).
+- "benefits": manfaat konkret dari produk ini. Field: title, points (array of {text, icon}, 3-5 poin — text maksimal 10 kata, icon 1 emoji yang pas buat poin itu).
 - "mechanism": cara kerja/cara pakai produknya, kalau relevan. Field: title, steps (array of {title, description}, 2-4 langkah).
 - "guarantee": jaminan yang masuk akal buat produk ini. Field: text (1 kalimat).
 - "faq": pertanyaan yang paling mungkin muncul di kepala calon pembeli. Field: items (array of {q, a}, 2-4 pasang).
@@ -124,8 +124,8 @@ Balas HANYA dalam format JSON persis kayak contoh ini, tanpa teks lain, tanpa ma
   "closingHeadline": "1 kalimat penutup buat ajakan beli di paling bawah halaman",
   "stylePresetChosen": "${isAuto ? "isi salah satu: brutal | minimal | playful | glass | neuro" : stylePreset}",
   "sections": [
-    {"type": "pain", "title": "...", "points": ["...", "..."]},
-    {"type": "benefits", "title": "...", "points": ["...", "..."]}
+    {"type": "pain", "title": "...", "points": [{"text": "...", "icon": "😩"}, {"text": "...", "icon": "⏰"}]},
+    {"type": "benefits", "title": "...", "points": [{"text": "...", "icon": "🚀"}, {"text": "...", "icon": "✅"}]}
   ]
 }
 
@@ -171,7 +171,9 @@ Aturan penting: JANGAN karang testimoni, angka penjualan, atau klaim yang gak ma
           closingHeadline: parsed.closingHeadline || "",
           sections,
           stylePresetChosen: chosenStyle,
-          benefitPoints: benefitsSection?.points ? benefitsSection.points.join("\n") : "",
+          benefitPoints: benefitsSection?.points
+            ? benefitsSection.points.map((p: any) => (typeof p === "string" ? p : p.text)).join("\n")
+            : "",
           guaranteeText: guaranteeSection?.text || "",
           faq: faqSection?.items || [],
         }),
