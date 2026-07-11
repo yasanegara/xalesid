@@ -61,7 +61,9 @@ export default function EditProductForm({ product }: { product: Product }) {
   // Gaya visual & referensi
   const [brandColor, setBrandColor] = useState(product.brandColor || "#f2c200");
   const [brandFont, setBrandFont] = useState(product.brandFont || "Plus Jakarta Sans");
-  const [stylePreset, setStylePreset] = useState(product.stylePreset || "bold");
+  const [stylePreset, setStylePreset] = useState(
+    product.stylePreset === "bold" || !product.stylePreset ? "brutal" : product.stylePreset
+  );
   const [referenceUrl, setReferenceUrl] = useState(product.referenceUrl || "");
   const [referenceImageUrl, setReferenceImageUrl] = useState(product.referenceImageUrl || "");
 
@@ -118,6 +120,7 @@ export default function EditProductForm({ product }: { product: Product }) {
           if (data?.faq && data.faq.length) setFaqItems(data.faq);
           if (data?.headline) setAiHeadline(data.headline);
           if (data?.sections) setLandingBlocksJson(JSON.stringify(data.sections));
+          if (data?.stylePresetChosen) setStylePreset(data.stylePresetChosen);
           setFullAiLoading(false);
           return;
         }
@@ -274,6 +277,7 @@ export default function EditProductForm({ product }: { product: Product }) {
             ✅ AI udah nyusun {aiSections.length} section buat halaman ini
           </b>
           {aiHeadline && <p style={{ fontSize: 13, marginBottom: 6 }}>Headline: "{aiHeadline}"</p>}
+          <p style={{ fontSize: 13, marginBottom: 6 }}>Gaya desain: <b>{stylePreset}</b></p>
           <ul style={{ fontSize: 12.5, color: "#444", paddingLeft: 18, marginBottom: 10 }}>
             {aiSections.map((s: any, i: number) => (
               <li key={i}>{s.title || s.type} ({s.type})</li>
@@ -372,18 +376,21 @@ export default function EditProductForm({ product }: { product: Product }) {
           </div>
 
           <div className="auth-field">
-            <label>Gaya penulisan &amp; layout</label>
+            <label>Gaya desain &amp; penulisan</label>
             <select
               value={stylePreset}
               onChange={(e) => setStylePreset(e.target.value)}
               style={{ width: "100%", border: "2px solid #ddd", borderRadius: 8, padding: 11, fontSize: 15 }}
             >
-              <option value="bold">Bold &amp; Berani (ala Hormozi)</option>
-              <option value="minimal">Minimalis &amp; Elegan</option>
-              <option value="playful">Playful &amp; Santai</option>
+              <option value="auto">✨ Biar AI yang pilihkan (sesuai konteks produk)</option>
+              <option value="brutal">Brutal — border tebal, bayangan keras, tegas</option>
+              <option value="minimal">Minimalis — lapang, lembut, elegan</option>
+              <option value="playful">Playful — bulat, empuk, ceria</option>
+              <option value="glass">Glassmorphism — kaca buram di atas gradasi warna</option>
+              <option value="neuro">Neumorphism — lembut, monokrom, timbul-tenggelam</option>
             </select>
             <p style={{ fontSize: 12, color: "#666", marginTop: 6 }}>
-              Ini ngaruh ke sudut kartu/tombol dan gaya bahasa yang dipakai AI pas generate.
+              Ini ngaruh ke bentuk kartu/tombol/section DAN gaya bahasa yang dipakai AI pas generate.
             </p>
           </div>
 

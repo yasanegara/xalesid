@@ -651,6 +651,240 @@ body {
   border-top: 1px solid rgba(255, 255, 255, 0.08);
 }
 
+/* ── Section semantik (dasar) — dipakai section pain & mechanism yang tadinya inline style ── */
+.pp-pain-section {
+  background: var(--k);
+}
+.pp-pain-section .pp-section-title {
+  color: var(--w);
+}
+.pp-pain-item {
+  display: flex;
+  gap: 14px;
+  align-items: flex-start;
+}
+.pp-pain-x {
+  color: #ff6b6b;
+  font-weight: 900;
+  font-size: 18px;
+}
+.pp-pain-text {
+  color: rgba(255, 255, 255, 0.85);
+  font-size: 16px;
+  font-weight: 600;
+  line-height: 1.5;
+}
+
+.pp-mechanism-section {
+  background: #fff;
+}
+.pp-mechanism-section .pp-section-title {
+  color: #111;
+}
+.pp-mechanism-step {
+  display: flex;
+  gap: 16px;
+  align-items: flex-start;
+  background: #f7f5f0;
+  border-radius: var(--radius, 10px);
+  padding: 16px 18px;
+}
+.pp-mechanism-num {
+  flex-shrink: 0;
+  width: 30px;
+  height: 30px;
+  background: var(--y);
+  border-radius: 50%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-weight: 900;
+  font-size: 14px;
+}
+.pp-mechanism-step b {
+  font-size: 15px;
+}
+.pp-mechanism-step p {
+  font-size: 13.5px;
+  color: var(--g);
+  margin-top: 4px;
+  line-height: 1.5;
+}
+
+/* ══════════════════════════════════════════════════
+   5 GAYA DESAIN — beda "bahasa visual", bukan cuma warna
+   ══════════════════════════════════════════════════ */
+
+/* ── BRUTAL — border tebal, bayangan keras, tanpa lengkung ── */
+.pp-style-brutal .lp-card,
+.pp-style-brutal .pp-guarantee-card {
+  border: 4px solid var(--k);
+  box-shadow: 8px 8px 0 var(--k);
+}
+.pp-style-brutal .lp-btn,
+.pp-style-brutal .hp-btn {
+  border: 3px solid var(--k);
+  box-shadow: 6px 6px 0 var(--yd) !important;
+}
+.pp-style-brutal .pp-faq-item {
+  border: 2.5px solid var(--k);
+}
+.pp-style-brutal .pp-mechanism-step {
+  border: 2px solid var(--k);
+}
+
+/* ── MINIMAL — lapang, lembut, hampir tanpa border ── */
+.pp-style-minimal .lp-card,
+.pp-style-minimal .pp-guarantee-card {
+  border: 1px solid #e9e5da !important;
+  box-shadow: 0 10px 30px rgba(0, 0, 0, 0.05) !important;
+}
+.pp-style-minimal .lp-btn,
+.pp-style-minimal .hp-btn {
+  box-shadow: none !important;
+  font-weight: 700 !important;
+}
+.pp-style-minimal .pp-faq-item {
+  border: 1px solid #ececec;
+  box-shadow: none;
+}
+.pp-style-minimal .pp-pain-section,
+.pp-style-minimal .pp-benefits-section,
+.pp-style-minimal .pp-final-section {
+  background: #fafaf8 !important;
+}
+.pp-style-minimal .pp-pain-section .pp-section-title,
+.pp-style-minimal .pp-benefits-section .pp-section-title,
+.pp-style-minimal .pp-final-title {
+  color: #111 !important;
+}
+.pp-style-minimal .pp-pain-text,
+.pp-style-minimal .pp-benefit-item {
+  color: #444 !important;
+}
+.pp-style-minimal .pp-footer {
+  background: #fafaf8;
+  color: #999;
+  border-top: 1px solid #ececec;
+}
+.pp-style-minimal .pp-section {
+  padding: 100px 24px;
+}
+
+/* ── PLAYFUL — bulat, empuk, pastel dari warna utama ── */
+.pp-style-playful .lp-btn,
+.pp-style-playful .hp-btn {
+  border-radius: 999px !important;
+}
+.pp-style-playful .lp-card,
+.pp-style-playful .pp-guarantee-card {
+  border: none !important;
+  box-shadow: 0 14px 34px -8px color-mix(in srgb, var(--y) 55%, transparent) !important;
+}
+.pp-style-playful .pp-pain-section,
+.pp-style-playful .pp-benefits-section,
+.pp-style-playful .pp-final-section {
+  background: color-mix(in srgb, var(--y) 14%, #171717) !important;
+}
+.pp-style-playful .pp-benefit-check {
+  border-radius: 50%;
+}
+.pp-style-playful .pp-faq-item {
+  border: none;
+  box-shadow: 0 6px 18px rgba(0, 0, 0, 0.06);
+}
+
+/* ── GLASS (Glassmorphism) — kaca buram di atas gradasi warna ── */
+.pp-style-glass .lp-hero,
+.pp-style-glass .pp-pain-section,
+.pp-style-glass .pp-benefits-section,
+.pp-style-glass .pp-mechanism-section,
+.pp-style-glass .pp-guarantee-section,
+.pp-style-glass .pp-faq-section,
+.pp-style-glass .pp-final-section {
+  background: linear-gradient(135deg, var(--y), var(--yd)) !important;
+}
+.pp-style-glass .pp-mechanism-section .pp-section-title,
+.pp-style-glass .pp-faq-section .pp-section-title,
+.pp-style-glass .pp-section-label {
+  color: #fff !important;
+}
+.pp-style-glass .lp-card,
+.pp-style-glass .pp-guarantee-card,
+.pp-style-glass .pp-faq-item,
+.pp-style-glass .pp-mechanism-step {
+  background: rgba(255, 255, 255, 0.16) !important;
+  backdrop-filter: blur(16px);
+  -webkit-backdrop-filter: blur(16px);
+  border: 1px solid rgba(255, 255, 255, 0.35) !important;
+  box-shadow: 0 8px 32px rgba(0, 0, 0, 0.12) !important;
+}
+.pp-style-glass .lp-title,
+.pp-style-glass .lp-desc,
+.pp-style-glass .lp-tag {
+  color: #fff !important;
+}
+.pp-style-glass .lp-badge-row,
+.pp-style-glass .lp-price-note {
+  color: rgba(255, 255, 255, 0.75) !important;
+}
+.pp-style-glass .pp-benefit-item,
+.pp-style-glass .pp-pain-text {
+  color: rgba(255, 255, 255, 0.92) !important;
+}
+.pp-style-glass .pp-mechanism-step p,
+.pp-style-glass .pp-faq-item p {
+  color: rgba(50, 40, 20, 0.75) !important;
+}
+.pp-style-glass .lp-btn,
+.pp-style-glass .hp-btn {
+  background: rgba(17, 17, 17, 0.85) !important;
+}
+
+/* ── NEUROMORPHISM — lembut, monokrom, timbul-tenggelam ── */
+.pp-style-neuro .lp-hero,
+.pp-style-neuro .pp-pain-section,
+.pp-style-neuro .pp-benefits-section,
+.pp-style-neuro .pp-mechanism-section,
+.pp-style-neuro .pp-guarantee-section,
+.pp-style-neuro .pp-faq-section,
+.pp-style-neuro .pp-final-section,
+.pp-style-neuro .pp-footer {
+  background: var(--neuro-base, #eceef2) !important;
+}
+.pp-style-neuro .pp-pain-section .pp-section-title,
+.pp-style-neuro .pp-final-title,
+.pp-style-neuro .lp-title {
+  color: #333 !important;
+}
+.pp-style-neuro .pp-pain-text,
+.pp-style-neuro .pp-benefit-item {
+  color: #555 !important;
+}
+.pp-style-neuro .lp-desc,
+.pp-style-neuro .lp-price-note,
+.pp-style-neuro .lp-badge-row {
+  color: #666 !important;
+}
+.pp-style-neuro .lp-card,
+.pp-style-neuro .pp-guarantee-card,
+.pp-style-neuro .pp-faq-item,
+.pp-style-neuro .pp-mechanism-step {
+  background: var(--neuro-base, #eceef2) !important;
+  border: none !important;
+  box-shadow: 9px 9px 18px rgba(0, 0, 0, 0.12), -9px -9px 18px rgba(255, 255, 255, 0.8) !important;
+}
+.pp-style-neuro .lp-btn,
+.pp-style-neuro .hp-btn {
+  background: var(--neuro-base, #eceef2) !important;
+  color: var(--yd) !important;
+  box-shadow: 6px 6px 12px rgba(0, 0, 0, 0.15), -6px -6px 12px rgba(255, 255, 255, 0.8) !important;
+}
+.pp-style-neuro .pp-benefit-check,
+.pp-style-neuro .pp-mechanism-num {
+  box-shadow: 3px 3px 6px rgba(0, 0, 0, 0.15), -3px -3px 6px rgba(255, 255, 255, 0.8);
+}
+
 /* ── Checkout ── */
 .co-wrap {
   min-height: 100vh;

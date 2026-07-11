@@ -10,9 +10,11 @@ function extractJson(text: string) {
 }
 
 const STYLE_LABEL: Record<string, string> = {
-  bold: "Bold & Berani — kayak Alex Hormozi: to the point, kontras tegas, headline besar, blak-blakan",
-  minimal: "Minimalis & Elegan — kalem, gak heboh, kata-kata dipilih hemat, percaya diri tanpa teriak-teriak",
-  playful: "Playful & Santai — akrab, ngobrol kayak temen, boleh ada sedikit humor ringan",
+  brutal: "Brutal — border tebal, bayangan keras tanpa blur, warna kontras tegas, headline besar, blak-blakan kayak Alex Hormozi",
+  minimal: "Minimalis & Elegan — kalem, banyak ruang kosong, kata-kata dipilih hemat, percaya diri tanpa teriak-teriak",
+  playful: "Playful & Santai — akrab, ngobrol kayak temen, boleh sedikit humor ringan, bentuk-bentuk bulat & ceria",
+  glass: "Glassmorphism — modern, premium, melayang, tenang tapi berkelas",
+  neuro: "Neumorphism — lembut, halus, tenang, monokrom, terasa mahal & clean",
 };
 
 export async function POST(req: NextRequest) {
@@ -63,7 +65,7 @@ export async function POST(req: NextRequest) {
     usingOwnKey,
     name,
     hint,
-    stylePreset || "bold",
+    stylePreset || "auto",
     referenceUrl || "",
     referenceImageUrl || ""
   ).catch(() => {});
@@ -89,22 +91,29 @@ async function runGeneration(
     referenceText = await fetchReferenceText(referenceUrl);
   }
 
-  const prompt = `Kamu adalah copywriter sales page kelas atas. Gaya nulis yang harus kamu pakai: ${STYLE_LABEL[stylePreset] || STYLE_LABEL.bold}.
+  const isAuto = stylePreset === "auto";
+  const styleInstruction = isAuto
+    ? `Kamu yang PILIH sendiri gaya desain paling pas buat produk ini, dari 5 opsi: brutal (Bold ala Hormozi), minimal (Minimalis & Elegan), playful (Playful & Santai), glass (Glassmorphism, modern-premium), neuro (Neumorphism, lembut-clean). Pertimbangkan segmen pembeli & jenis produknya sebelum milih.`
+    : `Gaya desain yang WAJIB kamu pakai: ${STYLE_LABEL[stylePreset] || STYLE_LABEL.brutal}.`;
+
+  const prompt = `Kamu berperan sebagai TIM GABUNGAN: (1) UI/UX designer senior yang paham psikologi visual & hierarki informasi, dan (2) copywriter/marketer kelas atas gaya Alex Hormozi — to the point, jujur soal masalah, tawaran jelas nilainya, gak bertele-tele tapi tetap profesional.
 
 Produk yang mau dijual: "${name}"
 ${hint ? `Info tambahan dari penjual: "${hint}"` : ""}
 ${referenceText ? `\nReferensi gaya bahasa dari website lain (JANGAN disalin kata-katanya persis, cuma buat kamu ngerti "vibe"-nya): "${referenceText}"` : ""}
 ${referenceImageUrl ? `\nDi pesan ini juga ada gambar poster referensi — perhatiin mood, target audience, dan gaya visualnya, sesuaikan nada tulisanmu biar nyambung sama gambar itu.` : ""}
 
+${styleInstruction}
+
 Tugas kamu:
 1. Kenali dulu produk ini jualan ke siapa (segmen/persona) dan masalah apa yang dia selesaikan — jangan ditulis eksplisit, tapi pakai buat nentuin copy-nya.
-2. Rancang STRUKTUR halaman jualan ini SENDIRI — kamu yang mutusin section apa aja yang relevan buat produk ini, gak semua produk butuh section yang sama. Boleh 2 section, boleh 5, terserah kamu, yang penting pas buat produknya.
+2. Rancang STRUKTUR halaman jualan ini SENDIRI — kamu yang mutusin section apa aja yang relevan buat produk ini, gak semua produk butuh section yang sama. Boleh 2 section, boleh 5, terserah kamu, yang penting pas buat produknya dan segmennya.
 3. Tulis semua copy-nya dalam Bahasa Indonesia, dengan gaya yang udah ditentuin di atas.
 
 Pilihan jenis section yang boleh kamu pakai (pilih yang relevan aja, urutannya bebas kamu tentuin):
 - "pain": angkat masalah/kegelisahan calon pembeli sebelum punya produk ini. Field: title, points (array string, 3-4 poin, tiap poin 1 kalimat pendek yang nyentil).
 - "benefits": manfaat konkret dari produk ini. Field: title, points (array string, 3-5 poin, tiap poin maksimal 10 kata).
-- "mechanism": cara kerja/cara pakai produknya, kalau relevan (misal produk yang prosesnya perlu dijelasin). Field: title, steps (array of {title, description}, 2-4 langkah).
+- "mechanism": cara kerja/cara pakai produknya, kalau relevan. Field: title, steps (array of {title, description}, 2-4 langkah).
 - "guarantee": jaminan yang masuk akal buat produk ini. Field: text (1 kalimat).
 - "faq": pertanyaan yang paling mungkin muncul di kepala calon pembeli. Field: items (array of {q, a}, 2-4 pasang).
 
@@ -113,6 +122,7 @@ Balas HANYA dalam format JSON persis kayak contoh ini, tanpa teks lain, tanpa ma
   "headline": "judul hero yang nendang, bukan cuma nama produk doang, maksimal 8 kata",
   "description": "1-2 kalimat subjudul di bawah headline",
   "closingHeadline": "1 kalimat penutup buat ajakan beli di paling bawah halaman",
+  "stylePresetChosen": "${isAuto ? "isi salah satu: brutal | minimal | playful | glass | neuro" : stylePreset}",
   "sections": [
     {"type": "pain", "title": "...", "points": ["...", "..."]},
     {"type": "benefits", "title": "...", "points": ["...", "..."]}
@@ -148,6 +158,9 @@ Aturan penting: JANGAN karang testimoni, angka penjualan, atau klaim yang gak ma
     const guaranteeSection = sections.find((s: any) => s.type === "guarantee");
     const faqSection = sections.find((s: any) => s.type === "faq");
 
+    const validStyles = ["brutal", "minimal", "playful", "glass", "neuro"];
+    const chosenStyle = validStyles.includes(parsed.stylePresetChosen) ? parsed.stylePresetChosen : (isAuto ? "brutal" : stylePreset);
+
     await prisma.aiJob.update({
       where: { id: jobId },
       data: {
@@ -157,6 +170,7 @@ Aturan penting: JANGAN karang testimoni, angka penjualan, atau klaim yang gak ma
           description: parsed.description || "",
           closingHeadline: parsed.closingHeadline || "",
           sections,
+          stylePresetChosen: chosenStyle,
           benefitPoints: benefitsSection?.points ? benefitsSection.points.join("\n") : "",
           guaranteeText: guaranteeSection?.text || "",
           faq: faqSection?.items || [],

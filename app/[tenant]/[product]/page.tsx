@@ -3,7 +3,7 @@ import { prisma } from "@/lib/prisma";
 import PageViewTracker from "./PageViewTracker";
 import BuyButton from "./BuyButton";
 import SocialProofPopup from "./SocialProofPopup";
-import { darkenHex, radiusForPreset, googleFontHref } from "@/lib/style-utils";
+import { darkenHex, neuroBaseHex, radiusForPreset, googleFontHref } from "@/lib/style-utils";
 
 type PainBlock = { type: "pain"; title?: string; points?: string[] };
 type BenefitsBlock = { type: "benefits"; title?: string; points?: string[] };
@@ -26,7 +26,6 @@ export default async function ProductLandingPage({
   });
   if (!product) notFound();
 
-  // ── Hitung data scarcity, semuanya dari data asli ──
   const soldCount = await prisma.order.count({ where: { productId: product.id, paymentStatus: "paid" } });
 
   const fiveMinAgo = new Date(Date.now() - 5 * 60 * 1000);
@@ -45,17 +44,19 @@ export default async function ProductLandingPage({
 
   const buyHref = `/${tenant.slug}/${product.slug}/checkout`;
 
-  // ── Gaya visual: kalau produk punya warna/font sendiri, override gaya default xales.id ──
   const brandColor = product.brandColor || "#f2c200";
+  const stylePreset = ["brutal", "minimal", "playful", "glass", "neuro"].includes(product.stylePreset)
+    ? product.stylePreset
+    : "brutal";
   const styleVars = {
     "--y": brandColor,
     "--yd": darkenHex(brandColor),
-    "--radius": radiusForPreset(product.stylePreset),
+    "--neuro-base": neuroBaseHex(brandColor),
+    "--radius": radiusForPreset(stylePreset),
     fontFamily: product.brandFont ? `"${product.brandFont}", "Plus Jakarta Sans", sans-serif` : undefined,
   } as React.CSSProperties;
   const fontHref = googleFontHref(product.brandFont);
 
-  // ── Kalau AI udah nyusun struktur bebas, pakai itu. Kalau belum, pakai field manual biasa ──
   const aiSections: Block[] | null = product.landingBlocksJson ? JSON.parse(product.landingBlocksJson) : null;
   const heroTitle = product.aiHeadline || product.name;
 
@@ -65,7 +66,7 @@ export default async function ProductLandingPage({
   const faqListManual: { q: string; a: string }[] = product.faqJson ? JSON.parse(product.faqJson) : [];
 
   return (
-    <div style={styleVars}>
+    <div style={styleVars} className={`pp-style-${stylePreset}`}>
       {fontHref && <link rel="stylesheet" href={fontHref} />}
       <PageViewTracker productId={product.id} />
       {product.socialProofEnabled && <SocialProofPopup productId={product.id} />}
@@ -123,22 +124,19 @@ export default async function ProductLandingPage({
         </div>
       </section>
 
-      {/* ── Kalau AI udah nyusun struktur bebas, render itu ── */}
       {aiSections
         ? aiSections.map((block, i) => {
             if (block.type === "pain" && block.points?.length) {
               return (
-                <section className="pp-section" style={{ background: "#111" }} key={i}>
+                <section className="pp-section pp-pain-section" key={i}>
                   <div className="pp-w">
                     <span className="pp-section-label">Sebelum lanjut</span>
-                    <h2 className="pp-section-title" style={{ color: "#fff" }}>
-                      {block.title}
-                    </h2>
+                    <h2 className="pp-section-title">{block.title}</h2>
                     <div style={{ display: "flex", flexDirection: "column", gap: 18 }}>
                       {block.points.map((p, j) => (
-                        <div key={j} style={{ display: "flex", gap: 14, alignItems: "flex-start" }}>
-                          <span style={{ color: "#ff6b6b", fontWeight: 900, fontSize: 18 }}>✗</span>
-                          <span style={{ color: "rgba(255,255,255,0.85)", fontSize: 16, fontWeight: 600, lineHeight: 1.5 }}>{p}</span>
+                        <div className="pp-pain-item" key={j}>
+                          <span className="pp-pain-x">✗</span>
+                          <span className="pp-pain-text">{p}</span>
                         </div>
                       ))}
                     </div>
@@ -166,23 +164,19 @@ export default async function ProductLandingPage({
             }
             if (block.type === "mechanism" && block.steps?.length) {
               return (
-                <section className="pp-section" style={{ background: "#fff" }} key={i}>
+                <section className="pp-section pp-mechanism-section" key={i}>
                   <div className="pp-w">
                     <span className="pp-section-label" style={{ color: "#b8860b" }}>
                       Cara kerjanya
                     </span>
-                    <h2 className="pp-section-title" style={{ color: "#111" }}>
-                      {block.title}
-                    </h2>
+                    <h2 className="pp-section-title">{block.title}</h2>
                     <div style={{ display: "flex", flexDirection: "column", gap: 16 }}>
                       {block.steps.map((s, j) => (
-                        <div key={j} style={{ display: "flex", gap: 16, alignItems: "flex-start", background: "#f7f5f0", borderRadius: 10, padding: "16px 18px" }}>
-                          <div style={{ flexShrink: 0, width: 30, height: 30, background: "#f2c200", borderRadius: "50%", display: "flex", alignItems: "center", justifyContent: "center", fontWeight: 900, fontSize: 14 }}>
-                            {j + 1}
-                          </div>
+                        <div className="pp-mechanism-step" key={j}>
+                          <div className="pp-mechanism-num">{j + 1}</div>
                           <div>
-                            <b style={{ fontSize: 15 }}>{s.title}</b>
-                            <p style={{ fontSize: 13.5, color: "#666", marginTop: 4, lineHeight: 1.5 }}>{s.description}</p>
+                            <b>{s.title}</b>
+                            <p>{s.description}</p>
                           </div>
                         </div>
                       ))}
@@ -210,9 +204,7 @@ export default async function ProductLandingPage({
                     <span className="pp-section-label" style={{ color: "#b8860b" }}>
                       Masih ragu?
                     </span>
-                    <h2 className="pp-section-title" style={{ color: "#111" }}>
-                      Pertanyaan yang sering ditanya
-                    </h2>
+                    <h2 className="pp-section-title">Pertanyaan yang sering ditanya</h2>
                     {block.items.map((item, j) => (
                       <details className="pp-faq-item" key={j}>
                         <summary>{item.q}</summary>
@@ -259,9 +251,7 @@ export default async function ProductLandingPage({
                   <span className="pp-section-label" style={{ color: "#b8860b" }}>
                     Masih ragu?
                   </span>
-                  <h2 className="pp-section-title" style={{ color: "#111" }}>
-                    Pertanyaan yang sering ditanya
-                  </h2>
+                  <h2 className="pp-section-title">Pertanyaan yang sering ditanya</h2>
                   {faqListManual.map((item, i) => (
                     <details className="pp-faq-item" key={i}>
                       <summary>{item.q}</summary>
@@ -274,12 +264,9 @@ export default async function ProductLandingPage({
           </>
         )}
 
-      {/* ── PENUTUP ── */}
       <section className="pp-section pp-final-section">
         <div className="pp-w">
-          <h2 className="pp-final-title">
-            {soldOut ? "Stoknya habis dulu" : "Yuk, mulai sekarang"}
-          </h2>
+          <h2 className="pp-final-title">{soldOut ? "Stoknya habis dulu" : "Yuk, mulai sekarang"}</h2>
           {!soldOut && (
             <a href={buyHref} className="hp-btn">
               Beli Sekarang — Rp {displayPrice.toLocaleString("id-ID")} →
