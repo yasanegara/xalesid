@@ -33,8 +33,9 @@ model Tenant {
   waNotifyNumber     String?  // nomor WA tenant yang mau dikabarin
 
   // Pilihan AI buat fitur "Buatkan dengan AI" — biar user bebas milih
-  aiProvider         String   @default("anthropic") // anthropic | openai | none
+  aiProvider         String   @default("anthropic") // anthropic | openai | sumopod | none
   aiApiKey           String?  // kunci API milik user sendiri (kosong = pakai jatah gratis platform, khusus anthropic)
+  aiModel            String?  // dipakai khusus provider sumopod, karena modelnya banyak pilihan
   aiTokensUsed       Int      @default(0)     // total token yang udah dipakai dari jatah gratis
   aiTokenLimit       Int      @default(25000) // jatah gratis awal
 

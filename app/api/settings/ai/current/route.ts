@@ -8,6 +8,7 @@ export async function GET() {
   return NextResponse.json({
     aiProvider: tenant.aiProvider,
     hasOwnKey: !!tenant.aiApiKey,
+    aiModel: tenant.aiModel || "",
     aiTokensUsed: tenant.aiTokensUsed,
     aiTokenLimit: tenant.aiTokenLimit,
   });

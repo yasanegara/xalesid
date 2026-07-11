@@ -5,6 +5,7 @@ import { useEffect, useState } from "react";
 export default function AISettingsPage() {
   const [aiProvider, setAiProvider] = useState("anthropic");
   const [aiApiKey, setAiApiKey] = useState("");
+  const [aiModel, setAiModel] = useState("");
   const [hasOwnKey, setHasOwnKey] = useState(false);
   const [aiTokensUsed, setAiTokensUsed] = useState(0);
   const [aiTokenLimit, setAiTokenLimit] = useState(25000);
@@ -19,6 +20,7 @@ export default function AISettingsPage() {
       .then((data) => {
         setAiProvider(data.aiProvider || "anthropic");
         setHasOwnKey(!!data.hasOwnKey);
+        setAiModel(data.aiModel || "");
         setAiTokensUsed(data.aiTokensUsed || 0);
         setAiTokenLimit(data.aiTokenLimit || 25000);
         setLoading(false);
@@ -35,7 +37,7 @@ export default function AISettingsPage() {
       const res = await fetch("/api/settings/ai", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ aiProvider, aiApiKey }),
+        body: JSON.stringify({ aiProvider, aiApiKey, aiModel }),
       });
       const data = await res.json();
       if (!res.ok) {
@@ -71,14 +73,7 @@ export default function AISettingsPage() {
             </span>
           </div>
           <div style={{ background: "#f0ede3", borderRadius: 6, height: 10, overflow: "hidden" }}>
-            <div
-              style={{
-                width: `${pct}%`,
-                background: pct >= 90 ? "#c0202e" : "#f2c200",
-                height: "100%",
-                borderRadius: 6,
-              }}
-            />
+            <div style={{ width: `${pct}%`, background: pct >= 90 ? "#c0202e" : "#f2c200", height: "100%", borderRadius: 6 }} />
           </div>
           {pct >= 90 && (
             <p style={{ fontSize: 12, color: "#9c0006", marginTop: 8 }}>
@@ -98,13 +93,31 @@ export default function AISettingsPage() {
           >
             <option value="anthropic">Anthropic (Claude)</option>
             <option value="openai">OpenAI (ChatGPT)</option>
+            <option value="sumopod">Sumopod AI (banyak pilihan model, hemat)</option>
             <option value="none">Matikan fitur AI</option>
           </select>
         </div>
 
+        {aiProvider === "sumopod" && (
+          <div className="auth-field">
+            <label>Model yang dipakai</label>
+            <input
+              value={aiModel}
+              onChange={(e) => setAiModel(e.target.value)}
+              placeholder="claude-sonnet-4-6"
+            />
+            <p style={{ fontSize: 12, color: "#666", marginTop: 6 }}>
+              Lihat daftar model &amp; harga lengkap di sumopod.com/dashboard/ai/models, copy id modelnya ke sini.
+              Kalau dikosongin, default pakai <code>claude-sonnet-4-6</code>.
+            </p>
+          </div>
+        )}
+
         {aiProvider !== "none" && (
           <div className="auth-field">
-            <label>Kunci API {aiProvider === "anthropic" ? "Anthropic" : "OpenAI"} kamu</label>
+            <label>
+              Kunci API {aiProvider === "anthropic" ? "Anthropic" : aiProvider === "sumopod" ? "Sumopod" : "OpenAI"} kamu
+            </label>
             <input
               type="password"
               value={aiApiKey}
@@ -112,9 +125,9 @@ export default function AISettingsPage() {
               placeholder={hasOwnKey ? "Sudah tersimpan — isi ulang kalau mau ganti" : "sk-..."}
             />
             <p style={{ fontSize: 12, color: "#666", marginTop: 6 }}>
-              {aiProvider === "anthropic"
-                ? "Boleh dikosongin dulu buat pakai jatah gratis platform. Isi sendiri kalau jatah gratisnya habis."
-                : "Wajib diisi — OpenAI gak punya jatah gratis dari platform, ambil dari platform.openai.com/api-keys."}
+              {aiProvider === "anthropic" && "Boleh dikosongin dulu buat pakai jatah gratis platform. Isi sendiri kalau jatah gratisnya habis."}
+              {aiProvider === "openai" && "Wajib diisi — ambil dari platform.openai.com/api-keys."}
+              {aiProvider === "sumopod" && "Wajib diisi — bikin key di ai.sumopod.com > AI > API Keys."}
             </p>
           </div>
         )}

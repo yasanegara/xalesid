@@ -63,6 +63,37 @@ export default function EditProductForm({ product }: { product: Product }) {
   const [loading, setLoading] = useState(false);
   const [aiLoading, setAiLoading] = useState(false);
   const [aiError, setAiError] = useState("");
+  const [fullAiLoading, setFullAiLoading] = useState(false);
+  const [fullAiError, setFullAiError] = useState("");
+
+  async function handleGenerateFullContent() {
+    if (!name.trim()) {
+      setFullAiError("Isi nama produk dulu ya, biar AI tahu mau nulis apa.");
+      return;
+    }
+    setFullAiError("");
+    setFullAiLoading(true);
+    try {
+      const res = await fetch("/api/products/generate-landing-content", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ name, hint: description }),
+      });
+      const data = await res.json();
+      if (!res.ok) {
+        setFullAiError(data.error || "Gagal minta bantuan AI.");
+        return;
+      }
+      if (data.description) setDescription(data.description);
+      if (data.benefitPoints) setBenefitPoints(data.benefitPoints);
+      if (data.guaranteeText) setGuaranteeText(data.guaranteeText);
+      if (data.faq && data.faq.length) setFaqItems(data.faq);
+    } catch {
+      setFullAiError("Gagal terhubung ke server. Coba lagi sebentar.");
+    } finally {
+      setFullAiLoading(false);
+    }
+  }
 
   async function handleGenerateAI() {
     if (!name.trim()) {
@@ -145,6 +176,30 @@ export default function EditProductForm({ product }: { product: Product }) {
 
   return (
     <form onSubmit={handleSubmit} className="card-form" style={{ maxWidth: 560 }}>
+      <div
+        style={{
+          background: "#fff3d6",
+          border: "2px dashed #b8860b",
+          borderRadius: 10,
+          padding: 14,
+          marginBottom: 20,
+        }}
+      >
+        <button
+          type="button"
+          onClick={handleGenerateFullContent}
+          disabled={fullAiLoading}
+          className="btn-primary"
+          style={{ width: "100%" }}
+        >
+          {fullAiLoading ? "AI lagi nulis..." : "🪄 Generate Semua Konten Landing Page dengan AI"}
+        </button>
+        <p style={{ fontSize: 12, color: "#666", marginTop: 8, marginBottom: 0 }}>
+          Isi deskripsi, poin manfaat, garansi, dan FAQ sekaligus dalam 1 klik. Hasilnya tetap bisa kamu edit manual.
+        </p>
+        {fullAiError && <p style={{ fontSize: 12, color: "#9c0006", marginTop: 8 }}>{fullAiError}</p>}
+      </div>
+
       {/* ── Dasar ── */}
       <div className="auth-field">
         <label>Nama produk</label>

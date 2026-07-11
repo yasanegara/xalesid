@@ -1,11 +1,14 @@
-// Satu fungsi buat 2 penyedia AI beda, biar kode pemanggilnya gak perlu tau bedanya
+// Satu fungsi buat beberapa penyedia AI beda, biar kode pemanggilnya gak perlu tau bedanya
 // Sekarang juga ngembaliin berapa token yang beneran kepakai, buat dicatat ke kuota
 
 type AIResult = { text: string; totalTokens: number };
 
-export async function generateWithAI(provider: string, apiKey: string, prompt: string): Promise<AIResult> {
+export async function generateWithAI(provider: string, apiKey: string, prompt: string, model?: string): Promise<AIResult> {
   if (provider === "openai") {
-    return generateWithOpenAI(apiKey, prompt);
+    return generateWithOpenAICompatible(apiKey, prompt, "https://api.openai.com/v1/chat/completions", "gpt-4o-mini");
+  }
+  if (provider === "sumopod") {
+    return generateWithOpenAICompatible(apiKey, prompt, "https://ai.sumopod.com/v1/chat/completions", model || "claude-sonnet-4-6");
   }
   return generateWithAnthropic(apiKey, prompt);
 }
@@ -20,7 +23,7 @@ async function generateWithAnthropic(apiKey: string, prompt: string): Promise<AI
     },
     body: JSON.stringify({
       model: "claude-haiku-4-5-20251001",
-      max_tokens: 200,
+      max_tokens: 700,
       messages: [{ role: "user", content: prompt }],
     }),
   });
@@ -34,22 +37,23 @@ async function generateWithAnthropic(apiKey: string, prompt: string): Promise<AI
   return { text, totalTokens };
 }
 
-async function generateWithOpenAI(apiKey: string, prompt: string): Promise<AIResult> {
-  const res = await fetch("https://api.openai.com/v1/chat/completions", {
+// Dipakai bareng buat OpenAI DAN Sumopod, soalnya formatnya sama-sama "OpenAI-compatible"
+async function generateWithOpenAICompatible(apiKey: string, prompt: string, endpoint: string, model: string): Promise<AIResult> {
+  const res = await fetch(endpoint, {
     method: "POST",
     headers: {
       "content-type": "application/json",
       authorization: `Bearer ${apiKey}`,
     },
     body: JSON.stringify({
-      model: "gpt-4o-mini",
-      max_tokens: 200,
+      model,
+      max_tokens: 700,
       messages: [{ role: "user", content: prompt }],
     }),
   });
   if (!res.ok) {
     const body = await res.text();
-    throw new Error(`OpenAI API error (${res.status}): ${body.slice(0, 300)}`);
+    throw new Error(`AI API error (${res.status}): ${body.slice(0, 300)}`);
   }
   const data = await res.json();
   const text = data.choices?.[0]?.message?.content?.trim() || "";
