@@ -474,6 +474,43 @@ body {
   color: var(--y);
 }
 
+/* ── Skeleton loading buat proses AI ── */
+@keyframes skeleton-pulse {
+  0%, 100% { opacity: 0.4; }
+  50% { opacity: 0.9; }
+}
+
+.ai-skeleton-row {
+  height: 12px;
+  background: #e5decf;
+  border-radius: 6px;
+  margin-bottom: 8px;
+  animation: skeleton-pulse 1.2s ease-in-out infinite;
+}
+
+.ai-progress-text {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  font-size: 12.5px;
+  color: #9c6500;
+  font-weight: 700;
+  margin-top: 10px;
+}
+
+.ai-spinner {
+  width: 14px;
+  height: 14px;
+  border: 2px solid #f2c200;
+  border-top-color: transparent;
+  border-radius: 50%;
+  animation: ai-spin 0.7s linear infinite;
+}
+
+@keyframes ai-spin {
+  to { transform: rotate(360deg); }
+}
+
 /* ── Checkout ── */
 .co-wrap {
   min-height: 100vh;

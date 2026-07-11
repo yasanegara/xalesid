@@ -73,12 +73,16 @@ export default function EditProductForm({ product }: { product: Product }) {
     }
     setFullAiError("");
     setFullAiLoading(true);
+    const controller = new AbortController();
+    const timeoutId = setTimeout(() => controller.abort(), 45000); // kasih 45 detik, AI kadang lambat
     try {
       const res = await fetch("/api/products/generate-landing-content", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({ name, hint: description }),
+        signal: controller.signal,
       });
+      clearTimeout(timeoutId);
       const data = await res.json();
       if (!res.ok) {
         setFullAiError(data.error || "Gagal minta bantuan AI.");
@@ -88,8 +92,13 @@ export default function EditProductForm({ product }: { product: Product }) {
       if (data.benefitPoints) setBenefitPoints(data.benefitPoints);
       if (data.guaranteeText) setGuaranteeText(data.guaranteeText);
       if (data.faq && data.faq.length) setFaqItems(data.faq);
-    } catch {
-      setFullAiError("Gagal terhubung ke server. Coba lagi sebentar.");
+    } catch (err: any) {
+      clearTimeout(timeoutId);
+      if (err?.name === "AbortError") {
+        setFullAiError("AI-nya kelamaan mikir (lebih dari 45 detik). Kemungkinan modelnya lambat — coba ganti model di Pengaturan AI, atau coba lagi.");
+      } else {
+        setFullAiError("Gagal terhubung ke server. Coba lagi sebentar.");
+      }
     } finally {
       setFullAiLoading(false);
     }
@@ -102,20 +111,29 @@ export default function EditProductForm({ product }: { product: Product }) {
     }
     setAiError("");
     setAiLoading(true);
+    const controller = new AbortController();
+    const timeoutId = setTimeout(() => controller.abort(), 45000);
     try {
       const res = await fetch("/api/products/generate-copy", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({ name, hint: description }),
+        signal: controller.signal,
       });
+      clearTimeout(timeoutId);
       const data = await res.json();
       if (!res.ok) {
         setAiError(data.error || "Gagal minta bantuan AI.");
         return;
       }
       setDescription(data.description);
-    } catch {
-      setAiError("Gagal terhubung ke server. Coba lagi sebentar.");
+    } catch (err: any) {
+      clearTimeout(timeoutId);
+      if (err?.name === "AbortError") {
+        setAiError("AI-nya kelamaan mikir. Coba lagi atau ganti model di Pengaturan AI.");
+      } else {
+        setAiError("Gagal terhubung ke server. Coba lagi sebentar.");
+      }
     } finally {
       setAiLoading(false);
     }
@@ -197,6 +215,17 @@ export default function EditProductForm({ product }: { product: Product }) {
         <p style={{ fontSize: 12, color: "#666", marginTop: 8, marginBottom: 0 }}>
           Isi deskripsi, poin manfaat, garansi, dan FAQ sekaligus dalam 1 klik. Hasilnya tetap bisa kamu edit manual.
         </p>
+        {fullAiLoading && (
+          <div style={{ marginTop: 12 }}>
+            <div className="ai-skeleton-row" style={{ width: "90%" }} />
+            <div className="ai-skeleton-row" style={{ width: "75%" }} />
+            <div className="ai-skeleton-row" style={{ width: "60%" }} />
+            <div className="ai-progress-text">
+              <span className="ai-spinner" />
+              Sedang mikir... biasanya 10-30 detik, sabar ya
+            </div>
+          </div>
+        )}
         {fullAiError && <p style={{ fontSize: 12, color: "#9c0006", marginTop: 8 }}>{fullAiError}</p>}
       </div>
 
@@ -219,6 +248,12 @@ export default function EditProductForm({ product }: { product: Product }) {
           </button>
         </div>
         <input value={description} onChange={(e) => setDescription(e.target.value)} placeholder="1-2 kalimat tentang produk ini" />
+        {aiLoading && (
+          <div className="ai-progress-text">
+            <span className="ai-spinner" />
+            Sedang mikir...
+          </div>
+        )}
         {aiError && <p style={{ fontSize: 12, color: "#9c0006", marginTop: 6 }}>{aiError}</p>}
       </div>
 

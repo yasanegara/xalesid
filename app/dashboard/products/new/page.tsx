@@ -22,20 +22,29 @@ export default function NewProductPage() {
     }
     setAiError("");
     setAiLoading(true);
+    const controller = new AbortController();
+    const timeoutId = setTimeout(() => controller.abort(), 45000);
     try {
       const res = await fetch("/api/products/generate-copy", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({ name, hint: description }),
+        signal: controller.signal,
       });
+      clearTimeout(timeoutId);
       const data = await res.json();
       if (!res.ok) {
         setAiError(data.error || "Gagal minta bantuan AI.");
         return;
       }
       setDescription(data.description);
-    } catch {
-      setAiError("Gagal terhubung ke server. Coba lagi sebentar.");
+    } catch (err: any) {
+      clearTimeout(timeoutId);
+      if (err?.name === "AbortError") {
+        setAiError("AI-nya kelamaan mikir. Coba lagi atau ganti model di Pengaturan AI.");
+      } else {
+        setAiError("Gagal terhubung ke server. Coba lagi sebentar.");
+      }
     } finally {
       setAiLoading(false);
     }
@@ -98,6 +107,12 @@ export default function NewProductPage() {
             </button>
           </div>
           <input value={description} onChange={(e) => setDescription(e.target.value)} placeholder="1-2 kalimat tentang produk ini, atau kasih kata kunci lalu klik Buatkan dengan AI" />
+          {aiLoading && (
+            <div className="ai-progress-text">
+              <span className="ai-spinner" />
+              Sedang mikir...
+            </div>
+          )}
           {aiError && <p style={{ fontSize: 12, color: "#9c0006", marginTop: 6 }}>{aiError}</p>}
         </div>
 
