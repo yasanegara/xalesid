@@ -9,9 +9,22 @@ type PointItem = string | { text: string; icon?: string };
 type PainBlock = { type: "pain"; title?: string; points?: PointItem[] };
 type BenefitsBlock = { type: "benefits"; title?: string; points?: PointItem[] };
 type MechanismBlock = { type: "mechanism"; title?: string; steps?: { title: string; description: string }[] };
+type StatsBlock = { type: "stats"; title?: string; items?: { value: string; label: string }[] };
+type ComparisonBlock = { type: "comparison"; title?: string; leftLabel?: string; rightLabel?: string; rows?: { left: string; right: string }[] };
+type StoryBlock = { type: "story"; title?: string; text?: string };
+type ObjectionBlock = { type: "objection"; title?: string; text?: string };
 type GuaranteeBlock = { type: "guarantee"; text?: string };
 type FaqBlock = { type: "faq"; items?: { q: string; a: string }[] };
-type Block = PainBlock | BenefitsBlock | MechanismBlock | GuaranteeBlock | FaqBlock;
+type Block =
+  | PainBlock
+  | BenefitsBlock
+  | MechanismBlock
+  | StatsBlock
+  | ComparisonBlock
+  | StoryBlock
+  | ObjectionBlock
+  | GuaranteeBlock
+  | FaqBlock;
 
 function pointText(p: PointItem) {
   return typeof p === "string" ? p : p.text;
@@ -188,6 +201,66 @@ export default async function ProductLandingPage({
                           </div>
                         </div>
                       ))}
+                    </div>
+                  </div>
+                </section>
+              );
+            }
+            if (block.type === "stats" && block.items?.length) {
+              return (
+                <section className="pp-section pp-stats-section" key={i}>
+                  <div className="pp-w pp-reveal">
+                    {block.title && <h2 className="pp-section-title">{block.title}</h2>}
+                    <div className="pp-stats-grid">
+                      {block.items.map((it, j) => (
+                        <div className="pp-stat-card" key={j}>
+                          <div className="pp-stat-value">{it.value}</div>
+                          <div className="pp-stat-label">{it.label}</div>
+                        </div>
+                      ))}
+                    </div>
+                  </div>
+                </section>
+              );
+            }
+            if (block.type === "comparison" && block.rows?.length) {
+              return (
+                <section className="pp-section pp-comparison-section" key={i}>
+                  <div className="pp-w pp-reveal">
+                    {block.title && <h2 className="pp-section-title">{block.title}</h2>}
+                    <div className="pp-comparison-table">
+                      <div className="pp-comparison-head">
+                        <div>{block.leftLabel || "Sebelum"}</div>
+                        <div>{block.rightLabel || "Sesudah"}</div>
+                      </div>
+                      {block.rows.map((r, j) => (
+                        <div className="pp-comparison-row" key={j}>
+                          <div className="pp-comparison-left">✗ {r.left}</div>
+                          <div className="pp-comparison-right">✓ {r.right}</div>
+                        </div>
+                      ))}
+                    </div>
+                  </div>
+                </section>
+              );
+            }
+            if (block.type === "story" && block.text) {
+              return (
+                <section className="pp-section pp-story-section" key={i}>
+                  <div className="pp-w pp-reveal">
+                    {block.title && <span className="pp-section-label">{block.title}</span>}
+                    <p className="pp-story-text">{block.text}</p>
+                  </div>
+                </section>
+              );
+            }
+            if (block.type === "objection" && block.text) {
+              return (
+                <section className="pp-section pp-objection-section" key={i}>
+                  <div className="pp-w pp-reveal">
+                    <div className="pp-objection-card">
+                      {block.title && <b>{block.title}</b>}
+                      <p>{block.text}</p>
                     </div>
                   </div>
                 </section>

@@ -998,6 +998,169 @@ body {
   transform: none;
 }
 
+/* ── Stats ── */
+.pp-stats-section {
+  background: var(--k);
+}
+.pp-stats-section .pp-section-title {
+  color: var(--w);
+}
+.pp-stats-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(120px, 1fr));
+  gap: 14px;
+}
+.pp-stat-card {
+  text-align: center;
+  background: rgba(255, 255, 255, 0.06);
+  border-radius: var(--radius, 10px);
+  padding: 20px 12px;
+}
+.pp-stat-value {
+  font-size: 30px;
+  font-weight: 900;
+  color: var(--y);
+  line-height: 1;
+  margin-bottom: 6px;
+}
+.pp-stat-label {
+  font-size: 12.5px;
+  color: rgba(255, 255, 255, 0.7);
+  font-weight: 600;
+}
+
+/* ── Comparison ── */
+.pp-comparison-section {
+  background: #fff;
+}
+.pp-comparison-section .pp-section-title {
+  color: #111;
+}
+.pp-comparison-table {
+  border-radius: var(--radius, 10px);
+  overflow: hidden;
+  border: 1.5px solid #e7e2d6;
+}
+.pp-comparison-head {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  background: var(--k);
+  color: var(--w);
+  font-weight: 800;
+  font-size: 13px;
+  text-transform: uppercase;
+  letter-spacing: 0.3px;
+}
+.pp-comparison-head div {
+  padding: 12px 16px;
+  text-align: center;
+}
+.pp-comparison-row {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  border-top: 1px solid #eee;
+}
+.pp-comparison-left,
+.pp-comparison-right {
+  padding: 13px 16px;
+  font-size: 13.5px;
+  line-height: 1.4;
+}
+.pp-comparison-left {
+  color: #9c0006;
+  background: #fff5f5;
+}
+.pp-comparison-right {
+  color: #1e7a34;
+  background: #f3fbf5;
+  font-weight: 600;
+}
+
+/* ── Story ── */
+.pp-story-section {
+  background: #f7f5f0;
+  text-align: center;
+}
+.pp-story-text {
+  font-size: 19px;
+  font-weight: 600;
+  line-height: 1.6;
+  color: #333;
+  font-style: italic;
+  max-width: 520px;
+  margin: 0 auto;
+}
+
+/* ── Objection ── */
+.pp-objection-section {
+  background: #fff;
+}
+.pp-objection-card {
+  border-left: 4px solid var(--y);
+  background: #f7f5f0;
+  border-radius: 0 var(--radius, 10px) var(--radius, 10px) 0;
+  padding: 20px 24px;
+}
+.pp-objection-card b {
+  display: block;
+  font-size: 15px;
+  margin-bottom: 6px;
+}
+.pp-objection-card p {
+  font-size: 14.5px;
+  color: var(--g);
+  line-height: 1.6;
+}
+
+/* Style override buat section baru ini juga ── */
+.pp-style-minimal .pp-stats-section {
+  background: #fafaf8 !important;
+}
+.pp-style-minimal .pp-stats-section .pp-section-title {
+  color: #111 !important;
+}
+.pp-style-minimal .pp-stat-value {
+  color: var(--yd) !important;
+}
+.pp-style-minimal .pp-stat-label {
+  color: #555 !important;
+}
+.pp-style-glass .pp-stats-section,
+.pp-style-glass .pp-comparison-section,
+.pp-style-glass .pp-story-section,
+.pp-style-glass .pp-objection-section {
+  background: linear-gradient(135deg, var(--y), var(--yd)) !important;
+}
+.pp-style-glass .pp-comparison-section .pp-section-title,
+.pp-style-glass .pp-stats-section .pp-section-title {
+  color: #fff !important;
+}
+.pp-style-glass .pp-stat-card,
+.pp-style-glass .pp-comparison-table,
+.pp-style-glass .pp-objection-card {
+  background: rgba(255, 255, 255, 0.16) !important;
+  backdrop-filter: blur(14px);
+  border: 1px solid rgba(255, 255, 255, 0.3) !important;
+}
+.pp-style-glass .pp-story-text {
+  color: #fff;
+}
+.pp-style-neuro .pp-stats-section,
+.pp-style-neuro .pp-comparison-section,
+.pp-style-neuro .pp-story-section,
+.pp-style-neuro .pp-objection-section {
+  background: var(--neuro-base, #eceef2) !important;
+}
+.pp-style-neuro .pp-stats-section .pp-section-title {
+  color: #333 !important;
+}
+.pp-style-neuro .pp-stat-card,
+.pp-style-neuro .pp-objection-card {
+  background: var(--neuro-base, #eceef2) !important;
+  box-shadow: 6px 6px 12px rgba(0, 0, 0, 0.12), -6px -6px 12px rgba(255, 255, 255, 0.8) !important;
+  border: none !important;
+}
+
 /* ── Checkout ── */
 .co-wrap {
   min-height: 100vh;

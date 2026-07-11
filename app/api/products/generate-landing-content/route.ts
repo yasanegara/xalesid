@@ -9,6 +9,20 @@ function extractJson(text: string) {
   return JSON.parse(cleaned);
 }
 
+// Bersihin karakter yang gak seharusnya ada di teks Bahasa Indonesia (misal aksara asing nyasar)
+function stripForeignScript(value: any): any {
+  if (typeof value === "string") {
+    return value.replace(/[\u3040-\u30ff\u3400-\u9fff\uac00-\ud7af]/g, "").replace(/\s{2,}/g, " ").trim();
+  }
+  if (Array.isArray(value)) return value.map(stripForeignScript);
+  if (value && typeof value === "object") {
+    const out: any = {};
+    for (const k in value) out[k] = stripForeignScript(value[k]);
+    return out;
+  }
+  return value;
+}
+
 const STYLE_LABEL: Record<string, string> = {
   brutal: "Brutal — border tebal, bayangan keras tanpa blur, warna kontras tegas, headline besar, blak-blakan kayak Alex Hormozi",
   minimal: "Minimalis & Elegan — kalem, banyak ruang kosong, kata-kata dipilih hemat, percaya diri tanpa teriak-teriak",
@@ -105,31 +119,38 @@ ${referenceImageUrl ? `\nDi pesan ini juga ada gambar poster referensi — perha
 
 ${styleInstruction}
 
-Tugas kamu:
-1. Kenali dulu produk ini jualan ke siapa (segmen/persona) dan masalah apa yang dia selesaikan — jangan ditulis eksplisit, tapi pakai buat nentuin copy-nya.
-2. Rancang STRUKTUR halaman jualan ini SENDIRI — kamu yang mutusin section apa aja yang relevan buat produk ini, gak semua produk butuh section yang sama. Boleh 2 section, boleh 5, terserah kamu, yang penting pas buat produknya dan segmennya.
-3. Tulis semua copy-nya dalam Bahasa Indonesia, dengan gaya yang udah ditentuin di atas.
+PENTING soal STRUKTUR — baca baik-baik:
+Kamu BEBAS milih section apa aja yang dipakai, JANGAN asal pakai semua jenis yang tersedia. Pikirkan dulu produk ini butuh apa:
+- Produk simpel/murah/gampang dipahami → cukup 2-3 section aja, gak usah lengkap-lengkap amat
+- Produk yang perlu dijelasin/agak mahal/butuh keyakinan lebih → boleh lebih banyak section
+JANGAN selalu pakai urutan pain→benefits→mechanism→guarantee→faq secara berurutan kayak checklist. Pilih dan urutkan sesuai APA YANG PALING MASUK AKAL buat produk dan segmen ini, bisa lompat-lompat, bisa skip beberapa jenis sama sekali.
 
-Pilihan jenis section yang boleh kamu pakai (pilih yang relevan aja, urutannya bebas kamu tentuin):
-- "pain": angkat masalah/kegelisahan calon pembeli sebelum punya produk ini. Field: title, points (array of {text, icon}, 3-4 poin — text 1 kalimat pendek yang nyentil, icon 1 emoji yang pas buat poin itu).
-- "benefits": manfaat konkret dari produk ini. Field: title, points (array of {text, icon}, 3-5 poin — text maksimal 10 kata, icon 1 emoji yang pas buat poin itu).
-- "mechanism": cara kerja/cara pakai produknya, kalau relevan. Field: title, steps (array of {title, description}, 2-4 langkah).
-- "guarantee": jaminan yang masuk akal buat produk ini. Field: text (1 kalimat).
-- "faq": pertanyaan yang paling mungkin muncul di kepala calon pembeli. Field: items (array of {q, a}, 2-4 pasang).
+Pilihan jenis section yang boleh kamu pakai (pilih yang RELEVAN aja):
+- "pain": masalah/kegelisahan calon pembeli sebelum punya produk ini. Field: title, points (array of {text, icon}, 3-4 poin).
+- "benefits": manfaat konkret. Field: title, points (array of {text, icon}, 3-5 poin, maksimal 10 kata per poin).
+- "mechanism": cara kerja/cara pakai, kalau prosesnya perlu dijelasin. Field: title, steps (array of {title, description}, 2-4 langkah).
+- "stats": angka/fakta yang menarik tentang produk ini sendiri (BUKAN angka penjualan/testimoni palsu — misal jumlah item dalam paket, durasi akses, dll). Field: title, items (array of {value, label}, 3-4 item — value itu angka/teks pendek kayak "50+" atau "24 Jam", label itu keterangannya).
+- "comparison": bandingin 2 hal (misal "cara lama vs cara pakai produk ini"). Field: title, leftLabel, rightLabel, rows (array of {left, right}, 3-4 baris perbandingan singkat).
+- "story": 1 paragraf narasi pendek yang relatable buat segmen pembeli (skenario sehari-hari yang mereka alami). Field: title, text (2-4 kalimat).
+- "objection": jawab 1 keraguan besar yang mungkin bikin orang ragu beli. Field: title, text (1-2 kalimat).
+- "guarantee": jaminan yang masuk akal. Field: text (1 kalimat).
+- "faq": pertanyaan yang sering muncul. Field: items (array of {q, a}, 2-4 pasang).
 
 Balas HANYA dalam format JSON persis kayak contoh ini, tanpa teks lain, tanpa markdown code block:
 {
-  "headline": "judul hero yang nendang, bukan cuma nama produk doang, maksimal 8 kata",
+  "headline": "judul hero yang nendang, maksimal 8 kata",
   "description": "1-2 kalimat subjudul di bawah headline",
-  "closingHeadline": "1 kalimat penutup buat ajakan beli di paling bawah halaman",
+  "closingHeadline": "1 kalimat penutup buat ajakan beli",
   "stylePresetChosen": "${isAuto ? "isi salah satu: brutal | minimal | playful | glass | neuro" : stylePreset}",
   "sections": [
-    {"type": "pain", "title": "...", "points": [{"text": "...", "icon": "😩"}, {"text": "...", "icon": "⏰"}]},
-    {"type": "benefits", "title": "...", "points": [{"text": "...", "icon": "🚀"}, {"text": "...", "icon": "✅"}]}
+    {"type": "benefits", "title": "...", "points": [{"text": "...", "icon": "🚀"}]}
   ]
 }
 
-Aturan penting: JANGAN karang testimoni, angka penjualan, atau klaim yang gak masuk akal. Copy-nya harus jujur berdasarkan info produk yang dikasih. JANGAN nyalin kalimat dari referensi website kata per kata.`;
+Aturan penting:
+- JANGAN karang testimoni, angka penjualan, atau klaim yang gak masuk akal.
+- JANGAN nyalin kalimat dari referensi website kata per kata.
+- Tulis dalam Bahasa Indonesia yang rapi dan natural — PERIKSA LAGI sebelum jawab: pastikan ada spasi yang benar antar kata (jangan sampai kata nempel kayak "tiketyang" atau "uangkamu"), dan JANGAN pakai aksara/huruf non-Latin (Kanji, Hangul, dll) sama sekali.`;
 
   try {
     const { text, totalTokens } = await generateWithAI(
@@ -137,7 +158,7 @@ Aturan penting: JANGAN karang testimoni, angka penjualan, atau klaim yang gak ma
       apiKey,
       prompt,
       aiModel || undefined,
-      1800,
+      2200,
       referenceImageUrl || undefined
     );
     let parsed;
@@ -148,6 +169,8 @@ Aturan penting: JANGAN karang testimoni, angka penjualan, atau klaim yang gak ma
         `AI ngasih jawaban yang gak lengkap/gak bisa dibaca. Coba lagi. (Potongan jawaban: ${text.slice(0, 150)})`
       );
     }
+
+    parsed = stripForeignScript(parsed);
 
     if (!usingOwnKey) {
       await prisma.tenant.update({ where: { id: tenantId }, data: { aiTokensUsed: { increment: totalTokens } } });
