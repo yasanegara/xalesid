@@ -120,6 +120,19 @@ model Message {
 
   @@index([tenantId, phone])
 }
+
+// ── AiJob = proses generate AI yang jalan di belakang layar, biar gak keputus kalau lambat ──
+model AiJob {
+  id         String   @id @default(cuid())
+  tenantId   String
+
+  status     String   @default("pending") // pending | done | failed
+  resultJson String?
+  errorText  String?
+
+  createdAt  DateTime @default(now())
+}
+
 model Event {
   id         String   @id @default(cuid())
 

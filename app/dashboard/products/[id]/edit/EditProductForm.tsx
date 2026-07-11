@@ -73,32 +73,45 @@ export default function EditProductForm({ product }: { product: Product }) {
     }
     setFullAiError("");
     setFullAiLoading(true);
-    const controller = new AbortController();
-    const timeoutId = setTimeout(() => controller.abort(), 45000); // kasih 45 detik, AI kadang lambat
     try {
-      const res = await fetch("/api/products/generate-landing-content", {
+      const startRes = await fetch("/api/products/generate-landing-content", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({ name, hint: description }),
-        signal: controller.signal,
       });
-      clearTimeout(timeoutId);
-      const data = await res.json();
-      if (!res.ok) {
-        setFullAiError(data.error || "Gagal minta bantuan AI.");
+      const startData = await startRes.json();
+      if (!startRes.ok) {
+        setFullAiError(startData.error || "Gagal minta bantuan AI.");
+        setFullAiLoading(false);
         return;
       }
-      if (data.description) setDescription(data.description);
-      if (data.benefitPoints) setBenefitPoints(data.benefitPoints);
-      if (data.guaranteeText) setGuaranteeText(data.guaranteeText);
-      if (data.faq && data.faq.length) setFaqItems(data.faq);
-    } catch (err: any) {
-      clearTimeout(timeoutId);
-      if (err?.name === "AbortError") {
-        setFullAiError("AI-nya kelamaan mikir (lebih dari 45 detik). Kemungkinan modelnya lambat — coba ganti model di Pengaturan AI, atau coba lagi.");
-      } else {
-        setFullAiError("Gagal terhubung ke server. Coba lagi sebentar.");
+
+      const jobId = startData.jobId;
+      const maxAttempts = 40; // 40 x 3 detik = 2 menit maksimal nunggu
+      for (let i = 0; i < maxAttempts; i++) {
+        await new Promise((r) => setTimeout(r, 3000));
+        const statusRes = await fetch(`/api/products/generate-landing-content/status?jobId=${jobId}`);
+        const statusData = await statusRes.json();
+
+        if (statusData.status === "done") {
+          const data = statusData.result;
+          if (data?.description) setDescription(data.description);
+          if (data?.benefitPoints) setBenefitPoints(data.benefitPoints);
+          if (data?.guaranteeText) setGuaranteeText(data.guaranteeText);
+          if (data?.faq && data.faq.length) setFaqItems(data.faq);
+          setFullAiLoading(false);
+          return;
+        }
+        if (statusData.status === "failed") {
+          setFullAiError("Gagal minta bantuan AI. Detail: " + (statusData.error || "gak diketahui"));
+          setFullAiLoading(false);
+          return;
+        }
+        // kalau masih "pending", lanjut nunggu lagi
       }
+      setFullAiError("AI-nya kelamaan mikir (lebih dari 2 menit). Coba lagi, atau ganti model di Pengaturan AI.");
+    } catch {
+      setFullAiError("Gagal terhubung ke server. Coba lagi sebentar.");
     } finally {
       setFullAiLoading(false);
     }
@@ -222,7 +235,7 @@ export default function EditProductForm({ product }: { product: Product }) {
             <div className="ai-skeleton-row" style={{ width: "60%" }} />
             <div className="ai-progress-text">
               <span className="ai-spinner" />
-              Sedang mikir... biasanya 10-30 detik, sabar ya
+              Sedang mikir... biasanya 10-30 detik, bisa lebih lama kalau lagi antre
             </div>
           </div>
         )}
