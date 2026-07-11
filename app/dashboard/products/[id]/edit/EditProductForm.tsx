@@ -16,6 +16,8 @@ type Product = {
   photoUrl: string | null;
   guaranteeText: string | null;
   faqJson: string | null;
+  aiHeadline: string | null;
+  landingBlocksJson: string | null;
   stockEnabled: boolean;
   stockQty: number | null;
   showSoldCount: boolean;
@@ -47,6 +49,9 @@ export default function EditProductForm({ product }: { product: Product }) {
   const [faqItems, setFaqItems] = useState<FAQItem[]>(
     product.faqJson ? JSON.parse(product.faqJson) : []
   );
+  const [aiHeadline, setAiHeadline] = useState(product.aiHeadline || "");
+  const [landingBlocksJson, setLandingBlocksJson] = useState(product.landingBlocksJson || "");
+  const aiSections = landingBlocksJson ? JSON.parse(landingBlocksJson) : null;
 
   // Scarcity
   const [stockEnabled, setStockEnabled] = useState(product.stockEnabled);
@@ -99,6 +104,8 @@ export default function EditProductForm({ product }: { product: Product }) {
           if (data?.benefitPoints) setBenefitPoints(data.benefitPoints);
           if (data?.guaranteeText) setGuaranteeText(data.guaranteeText);
           if (data?.faq && data.faq.length) setFaqItems(data.faq);
+          if (data?.headline) setAiHeadline(data.headline);
+          if (data?.sections) setLandingBlocksJson(JSON.stringify(data.sections));
           setFullAiLoading(false);
           return;
         }
@@ -182,6 +189,8 @@ export default function EditProductForm({ product }: { product: Product }) {
           photoUrl,
           guaranteeText,
           faqJson: faqItems.length ? JSON.stringify(faqItems.filter((f) => f.q.trim())) : "",
+          aiHeadline,
+          landingBlocksJson,
           stockEnabled,
           stockQty,
           showSoldCount,
@@ -241,6 +250,30 @@ export default function EditProductForm({ product }: { product: Product }) {
         )}
         {fullAiError && <p style={{ fontSize: 12, color: "#9c0006", marginTop: 8 }}>{fullAiError}</p>}
       </div>
+
+      {aiSections && (
+        <div style={{ background: "#eef3ff", border: "1.5px solid #1d4ed8", borderRadius: 10, padding: 14, marginBottom: 20 }}>
+          <b style={{ fontSize: 13, display: "block", marginBottom: 8 }}>
+            ✅ AI udah nyusun {aiSections.length} section buat halaman ini
+          </b>
+          {aiHeadline && <p style={{ fontSize: 13, marginBottom: 6 }}>Headline: "{aiHeadline}"</p>}
+          <ul style={{ fontSize: 12.5, color: "#444", paddingLeft: 18, marginBottom: 10 }}>
+            {aiSections.map((s: any, i: number) => (
+              <li key={i}>{s.title || s.type} ({s.type})</li>
+            ))}
+          </ul>
+          <button
+            type="button"
+            onClick={() => {
+              setAiHeadline("");
+              setLandingBlocksJson("");
+            }}
+            style={{ fontSize: 12, fontWeight: 700, background: "none", border: "1px solid #1d4ed8", color: "#1d4ed8", borderRadius: 6, padding: "5px 10px", cursor: "pointer" }}
+          >
+            Hapus, balik ke mode manual (field di bawah)
+          </button>
+        </div>
+      )}
 
       {/* ── Dasar ── */}
       <div className="auth-field">

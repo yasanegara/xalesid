@@ -64,6 +64,8 @@ model Product {
   photoUrl      String?  // foto produk
   guaranteeText String?  // teks garansi
   faqJson       String?  // daftar tanya-jawab, disimpan JSON [{q,a}]
+  aiHeadline    String?  // headline hero versi AI, boleh beda dari nama produk
+  landingBlocksJson String? // struktur halaman bebas dari AI: urutan & jenis section dia yang nentuin
 
   // ── Scarcity — semua berbasis data asli, bukan settingan bohongan ──
   stockEnabled  Boolean  @default(false)

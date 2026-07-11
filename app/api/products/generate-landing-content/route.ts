@@ -48,8 +48,6 @@ export async function POST(req: NextRequest) {
 
   const job = await prisma.aiJob.create({ data: { tenantId: tenant.id, status: "pending" } });
 
-  // PENTING: sengaja gak di-"await" — biar response ke browser balik cepet,
-  // dan prosesnya tetap lanjut jalan sendiri di server walau koneksi awal udah kelar.
   runGeneration(job.id, tenant.id, tenant.aiProvider, apiKey, tenant.aiModel, usingOwnKey, name, hint).catch(() => {});
 
   return NextResponse.json({ jobId: job.id });
@@ -65,17 +63,38 @@ async function runGeneration(
   name: string,
   hint: string
 ) {
-  const prompt = `Kamu bantu penjual online lengkapi konten landing page buat produknya.
-Nama produk: "${name}"
+  const prompt = `Kamu adalah copywriter sales page kelas atas, gayanya kayak Alex Hormozi: to the point, blak-blakan soal masalah, tawaran yang jelas nilainya, gak bertele-tele, tapi tetap kedengaran profesional (bukan norak/lebay).
+
+Produk yang mau dijual: "${name}"
 ${hint ? `Info tambahan dari penjual: "${hint}"` : ""}
 
-Balas HANYA dalam format JSON persis seperti contoh di bawah, tanpa teks lain, tanpa markdown code block, tanpa basa-basi:
-{"description": "1-2 kalimat bahasa Indonesia santai tapi meyakinkan", "benefitPoints": ["poin manfaat singkat 1", "poin manfaat singkat 2", "poin manfaat singkat 3"], "guaranteeText": "1 kalimat garansi yang masuk akal buat produk ini", "faq": [{"q": "pertanyaan singkat", "a": "jawaban singkat"}, {"q": "pertanyaan singkat", "a": "jawaban singkat"}, {"q": "pertanyaan singkat", "a": "jawaban singkat"}]}
+Tugas kamu:
+1. Kenali dulu produk ini jualan ke siapa (segmen/persona) dan masalah apa yang dia selesaikan — jangan ditulis eksplisit, tapi pakai buat nentuin copy-nya.
+2. Rancang STRUKTUR halaman jualan ini SENDIRI — kamu yang mutusin section apa aja yang relevan buat produk ini, gak semua produk butuh section yang sama. Boleh 2 section, boleh 5, terserah kamu, yang penting pas buat produknya.
+3. Tulis semua copy-nya dalam Bahasa Indonesia.
 
-Aturan: benefitPoints isi 3-5 poin, tiap poin maksimal 8 kata. faq isi 3 pasang tanya-jawab yang paling sering ditanyain calon pembeli produk ini. Jangan karang testimoni, angka penjualan, atau klaim yang gak masuk akal.`;
+Pilihan jenis section yang boleh kamu pakai (pilih yang relevan aja, urutannya bebas kamu tentuin):
+- "pain": angkat masalah/kegelisahan calon pembeli sebelum punya produk ini. Field: title, points (array string, 3-4 poin, tiap poin 1 kalimat pendek yang nyentil).
+- "benefits": manfaat konkret dari produk ini. Field: title, points (array string, 3-5 poin, tiap poin maksimal 10 kata).
+- "mechanism": cara kerja/cara pakai produknya, kalau relevan (misal produk yang prosesnya perlu dijelasin). Field: title, steps (array of {title, description}, 2-4 langkah).
+- "guarantee": jaminan yang masuk akal buat produk ini. Field: text (1 kalimat).
+- "faq": pertanyaan yang paling mungkin muncul di kepala calon pembeli. Field: items (array of {q, a}, 2-4 pasang).
+
+Balas HANYA dalam format JSON persis kayak contoh ini, tanpa teks lain, tanpa markdown code block:
+{
+  "headline": "judul hero yang nendang, bukan cuma nama produk doang, maksimal 8 kata",
+  "description": "1-2 kalimat subjudul di bawah headline",
+  "closingHeadline": "1 kalimat penutup buat ajakan beli di paling bawah halaman",
+  "sections": [
+    {"type": "pain", "title": "...", "points": ["...", "..."]},
+    {"type": "benefits", "title": "...", "points": ["...", "..."]}
+  ]
+}
+
+Aturan penting: JANGAN karang testimoni, angka penjualan, atau klaim yang gak masuk akal. Copy-nya harus jujur berdasarkan info produk yang dikasih.`;
 
   try {
-    const { text, totalTokens } = await generateWithAI(aiProvider, apiKey, prompt, aiModel || undefined, 1500);
+    const { text, totalTokens } = await generateWithAI(aiProvider, apiKey, prompt, aiModel || undefined, 1800);
     let parsed;
     try {
       parsed = extractJson(text);
@@ -89,15 +108,26 @@ Aturan: benefitPoints isi 3-5 poin, tiap poin maksimal 8 kata. faq isi 3 pasang 
       await prisma.tenant.update({ where: { id: tenantId }, data: { aiTokensUsed: { increment: totalTokens } } });
     }
 
+    // Sekalian susun versi "field sederhana" dari hasil section-section AI,
+    // biar tetap ada yang bisa diedit manual kalau usernya mau
+    const sections = Array.isArray(parsed.sections) ? parsed.sections : [];
+    const benefitsSection = sections.find((s: any) => s.type === "benefits");
+    const guaranteeSection = sections.find((s: any) => s.type === "guarantee");
+    const faqSection = sections.find((s: any) => s.type === "faq");
+
     await prisma.aiJob.update({
       where: { id: jobId },
       data: {
         status: "done",
         resultJson: JSON.stringify({
+          headline: parsed.headline || "",
           description: parsed.description || "",
-          benefitPoints: Array.isArray(parsed.benefitPoints) ? parsed.benefitPoints.join("\n") : "",
-          guaranteeText: parsed.guaranteeText || "",
-          faq: Array.isArray(parsed.faq) ? parsed.faq : [],
+          closingHeadline: parsed.closingHeadline || "",
+          sections,
+          // Fallback versi sederhana, dari section yang cocok kalau ada
+          benefitPoints: benefitsSection?.points ? benefitsSection.points.join("\n") : "",
+          guaranteeText: guaranteeSection?.text || "",
+          faq: faqSection?.items || [],
         }),
       },
     });
