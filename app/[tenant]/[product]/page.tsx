@@ -35,10 +35,12 @@ export default async function ProductLandingPage({
   const promoActive = !!product.promoPrice && (!product.promoEndsAt || product.promoEndsAt.getTime() > Date.now());
   const displayPrice = promoActive ? product.promoPrice! : product.price;
 
-  const benefitList = product.benefitPoints
-    ? product.benefitPoints.split("\n").map((s) => s.trim()).filter(Boolean)
+  const benefitList: string[] = product.benefitPoints
+    ? product.benefitPoints.split("\n").map((s: string) => s.trim()).filter(Boolean)
     : [];
   const faqList: { q: string; a: string }[] = product.faqJson ? JSON.parse(product.faqJson) : [];
+
+  const buyHref = `/${tenant.slug}/${product.slug}/checkout`;
 
   return (
     <>
@@ -49,6 +51,7 @@ export default async function ProductLandingPage({
         {product.isPhysical ? "📦 Produk fisik · Dikirim setelah pembayaran" : "⚡ Produk digital · Langsung dikirim setelah bayar"}
       </div>
 
+      {/* ── HERO ── */}
       <section className="lp-hero">
         <div className="lp-hero-inner">
           <span className="lp-tag">{tenant.name}</span>
@@ -86,7 +89,7 @@ export default async function ProductLandingPage({
                 Stok Habis
               </div>
             ) : (
-              <BuyButton productId={product.id} href={`/${tenant.slug}/${product.slug}/checkout`} />
+              <BuyButton productId={product.id} href={buyHref} />
             )}
             <div className="lp-badge-row">
               <span>🔒 Pembayaran aman</span>
@@ -94,29 +97,79 @@ export default async function ProductLandingPage({
               <span>{product.isPhysical ? "Dikirim ke alamat kamu" : "Download instan"}</span>
             </div>
           </div>
+        </div>
+      </section>
 
-          {benefitList.length > 0 && (
-            <ul className="lp-benefits">
+      {/* ── POIN MANFAAT ── */}
+      {benefitList.length > 0 && (
+        <section className="pp-section pp-benefits-section">
+          <div className="pp-w">
+            <span className="pp-section-label">Yang kamu dapat</span>
+            <h2 className="pp-section-title">Kenapa produk ini layak dibeli</h2>
+            <ul className="pp-benefit-list" style={{ listStyle: "none" }}>
               {benefitList.map((point, i) => (
-                <li key={i}>{point}</li>
+                <li className="pp-benefit-item" key={i}>
+                  <span className="pp-benefit-check">✓</span>
+                  <span>{point}</span>
+                </li>
               ))}
             </ul>
-          )}
+          </div>
+        </section>
+      )}
 
-          {product.guaranteeText && <div className="lp-guarantee-box">🛡️ {product.guaranteeText}</div>}
-
-          {faqList.length > 0 && (
-            <div className="lp-faq">
-              {faqList.map((item, i) => (
-                <details key={i}>
-                  <summary>{item.q}</summary>
-                  <p>{item.a}</p>
-                </details>
-              ))}
+      {/* ── GARANSI ── */}
+      {product.guaranteeText && (
+        <section className="pp-section pp-guarantee-section">
+          <div className="pp-w">
+            <div className="pp-guarantee-card">
+              <div className="pp-guarantee-icon">🛡️</div>
+              <div className="pp-guarantee-text">{product.guaranteeText}</div>
             </div>
+          </div>
+        </section>
+      )}
+
+      {/* ── FAQ ── */}
+      {faqList.length > 0 && (
+        <section className="pp-section pp-faq-section">
+          <div className="pp-w">
+            <span className="pp-section-label" style={{ color: "#b8860b" }}>
+              Masih ragu?
+            </span>
+            <h2 className="pp-section-title" style={{ color: "#111" }}>
+              Pertanyaan yang sering ditanya
+            </h2>
+            {faqList.map((item, i) => (
+              <details className="pp-faq-item" key={i}>
+                <summary>{item.q}</summary>
+                <p>{item.a}</p>
+              </details>
+            ))}
+          </div>
+        </section>
+      )}
+
+      {/* ── PENUTUP ── */}
+      <section className="pp-section pp-final-section">
+        <div className="pp-w">
+          <h2 className="pp-final-title">
+            {soldOut ? "Stoknya habis dulu" : "Yuk, mulai sekarang"}
+          </h2>
+          {!soldOut && (
+            <a href={buyHref} className="hp-btn">
+              Beli Sekarang — Rp {displayPrice.toLocaleString("id-ID")} →
+            </a>
           )}
         </div>
       </section>
+
+      <footer className="pp-footer">
+        {tenant.name} · dibuat dengan{" "}
+        <a href="/" style={{ color: "#f2c200", textDecoration: "none" }}>
+          xales.id
+        </a>
+      </footer>
     </>
   );
 }
