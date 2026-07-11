@@ -3,17 +3,17 @@
 
 type AIResult = { text: string; totalTokens: number };
 
-export async function generateWithAI(provider: string, apiKey: string, prompt: string, model?: string): Promise<AIResult> {
+export async function generateWithAI(provider: string, apiKey: string, prompt: string, model?: string, maxTokens = 400): Promise<AIResult> {
   if (provider === "openai") {
-    return generateWithOpenAICompatible(apiKey, prompt, "https://api.openai.com/v1/chat/completions", "gpt-4o-mini");
+    return generateWithOpenAICompatible(apiKey, prompt, "https://api.openai.com/v1/chat/completions", "gpt-4o-mini", maxTokens);
   }
   if (provider === "sumopod") {
-    return generateWithOpenAICompatible(apiKey, prompt, "https://ai.sumopod.com/v1/chat/completions", model || "claude-sonnet-4-6");
+    return generateWithOpenAICompatible(apiKey, prompt, "https://ai.sumopod.com/v1/chat/completions", model || "claude-sonnet-4-6", maxTokens);
   }
-  return generateWithAnthropic(apiKey, prompt);
+  return generateWithAnthropic(apiKey, prompt, maxTokens);
 }
 
-async function generateWithAnthropic(apiKey: string, prompt: string): Promise<AIResult> {
+async function generateWithAnthropic(apiKey: string, prompt: string, maxTokens: number): Promise<AIResult> {
   const res = await fetch("https://api.anthropic.com/v1/messages", {
     method: "POST",
     headers: {
@@ -23,7 +23,7 @@ async function generateWithAnthropic(apiKey: string, prompt: string): Promise<AI
     },
     body: JSON.stringify({
       model: "claude-haiku-4-5-20251001",
-      max_tokens: 700,
+      max_tokens: maxTokens,
       messages: [{ role: "user", content: prompt }],
     }),
   });
@@ -38,7 +38,7 @@ async function generateWithAnthropic(apiKey: string, prompt: string): Promise<AI
 }
 
 // Dipakai bareng buat OpenAI DAN Sumopod, soalnya formatnya sama-sama "OpenAI-compatible"
-async function generateWithOpenAICompatible(apiKey: string, prompt: string, endpoint: string, model: string): Promise<AIResult> {
+async function generateWithOpenAICompatible(apiKey: string, prompt: string, endpoint: string, model: string, maxTokens: number): Promise<AIResult> {
   const res = await fetch(endpoint, {
     method: "POST",
     headers: {
@@ -47,7 +47,7 @@ async function generateWithOpenAICompatible(apiKey: string, prompt: string, endp
     },
     body: JSON.stringify({
       model,
-      max_tokens: 700,
+      max_tokens: maxTokens,
       messages: [{ role: "user", content: prompt }],
     }),
   });

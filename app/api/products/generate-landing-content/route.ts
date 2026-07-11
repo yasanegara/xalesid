@@ -75,8 +75,15 @@ Balas HANYA dalam format JSON persis seperti contoh di bawah, tanpa teks lain, t
 Aturan: benefitPoints isi 3-5 poin, tiap poin maksimal 8 kata. faq isi 3 pasang tanya-jawab yang paling sering ditanyain calon pembeli produk ini. Jangan karang testimoni, angka penjualan, atau klaim yang gak masuk akal.`;
 
   try {
-    const { text, totalTokens } = await generateWithAI(aiProvider, apiKey, prompt, aiModel || undefined);
-    const parsed = extractJson(text);
+    const { text, totalTokens } = await generateWithAI(aiProvider, apiKey, prompt, aiModel || undefined, 1500);
+    let parsed;
+    try {
+      parsed = extractJson(text);
+    } catch {
+      throw new Error(
+        `AI ngasih jawaban yang gak lengkap/gak bisa dibaca. Coba lagi. (Potongan jawaban: ${text.slice(0, 150)})`
+      );
+    }
 
     if (!usingOwnKey) {
       await prisma.tenant.update({ where: { id: tenantId }, data: { aiTokensUsed: { increment: totalTokens } } });
