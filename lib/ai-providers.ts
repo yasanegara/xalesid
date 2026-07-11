@@ -25,14 +25,22 @@ async function generateWithAnthropic(apiKey: string, prompt: string, maxTokens: 
 
   if (imageUrl) {
     try {
-      // Anthropic butuh gambarnya di-encode base64, gak bisa langsung kasih link
-      const imgRes = await fetch(imageUrl);
-      const buffer = await imgRes.arrayBuffer();
-      const base64 = Buffer.from(buffer).toString("base64");
-      const mediaType = imgRes.headers.get("content-type") || "image/jpeg";
-      content.push({ type: "image", source: { type: "base64", media_type: mediaType, data: base64 } });
+      if (imageUrl.startsWith("data:")) {
+        // Ini dari upload file — udah base64, tinggal dibongkar, gak perlu fetch
+        const match = imageUrl.match(/^data:([^;]+);base64,(.+)$/);
+        if (match) {
+          content.push({ type: "image", source: { type: "base64", media_type: match[1], data: match[2] } });
+        }
+      } else {
+        // Ini link biasa — ambil dulu isinya, baru diubah ke base64
+        const imgRes = await fetch(imageUrl);
+        const buffer = await imgRes.arrayBuffer();
+        const base64 = Buffer.from(buffer).toString("base64");
+        const mediaType = imgRes.headers.get("content-type") || "image/jpeg";
+        content.push({ type: "image", source: { type: "base64", media_type: mediaType, data: base64 } });
+      }
     } catch {
-      // Kalau gambar gagal diambil, lanjut tanpa gambar aja, jangan gagalin semuanya
+      // Kalau gambar gagal diproses, lanjut tanpa gambar aja, jangan gagalin semuanya
     }
   }
   content.push({ type: "text", text: prompt });

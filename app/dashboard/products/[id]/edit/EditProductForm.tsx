@@ -66,6 +66,25 @@ export default function EditProductForm({ product }: { product: Product }) {
   );
   const [referenceUrl, setReferenceUrl] = useState(product.referenceUrl || "");
   const [referenceImageUrl, setReferenceImageUrl] = useState(product.referenceImageUrl || "");
+  const [imageUploadError, setImageUploadError] = useState("");
+
+  function handleImageUpload(e: React.ChangeEvent<HTMLInputElement>) {
+    const file = e.target.files?.[0];
+    if (!file) return;
+    setImageUploadError("");
+    if (!file.type.startsWith("image/")) {
+      setImageUploadError("File harus berupa gambar (JPG, PNG, dll).");
+      return;
+    }
+    if (file.size > 4 * 1024 * 1024) {
+      setImageUploadError("Ukuran gambar maksimal 4MB. Coba kompres dulu atau pakai gambar lain.");
+      return;
+    }
+    const reader = new FileReader();
+    reader.onload = () => setReferenceImageUrl(reader.result as string);
+    reader.onerror = () => setImageUploadError("Gagal baca file gambarnya. Coba lagi.");
+    reader.readAsDataURL(file);
+  }
 
   // Scarcity
   const [stockEnabled, setStockEnabled] = useState(product.stockEnabled);
@@ -408,13 +427,33 @@ export default function EditProductForm({ product }: { product: Product }) {
 
           <div className="auth-field">
             <label>Referensi gambar poster (opsional)</label>
+            <input type="file" accept="image/*" onChange={handleImageUpload} style={{ marginBottom: 8 }} />
+            {imageUploadError && <p style={{ fontSize: 12, color: "#9c0006", marginBottom: 8 }}>{imageUploadError}</p>}
+
+            {referenceImageUrl && (
+              <div style={{ display: "flex", alignItems: "center", gap: 10, marginBottom: 8 }}>
+                <img
+                  src={referenceImageUrl}
+                  alt="Preview referensi"
+                  style={{ width: 70, height: 70, objectFit: "cover", borderRadius: 8, border: "1.5px solid #ddd" }}
+                />
+                <button
+                  type="button"
+                  onClick={() => setReferenceImageUrl("")}
+                  style={{ fontSize: 12, color: "#9c0006", background: "none", border: "none", cursor: "pointer" }}
+                >
+                  Hapus gambar
+                </button>
+              </div>
+            )}
+
             <input
-              value={referenceImageUrl}
+              value={referenceImageUrl.startsWith("data:") ? "" : referenceImageUrl}
               onChange={(e) => setReferenceImageUrl(e.target.value)}
-              placeholder="https://... link gambar"
+              placeholder="...atau tempel link gambar di sini"
             />
             <p style={{ fontSize: 12, color: "#666", marginTop: 6 }}>
-              AI bakal "lihat" gambar ini buat nyesuaiin gaya tulisannya. Isi link gambar, bukan upload file.
+              AI bakal "lihat" gambar ini dan nyesuaiin gaya tulisan + pilihan desain biar seirama sama gambarnya. Maksimal 4MB.
             </p>
           </div>
         </div>
